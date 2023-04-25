@@ -4,12 +4,13 @@ import { TouchableOpacity } from 'react-native-web';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { MaterialCommunityIcons, Feather } from '@expo/vector-icons'
+import { MaterialCommunityIcons, Feather, Ionicons } from '@expo/vector-icons'
 import HomeScreen from './components/screens/HomeScreen';
 import RegisterScreen from './components/screens/RegisterScreen';
 import LoginScreen from './components/screens/LoginScreen';
 import ProfileScreen from './components/screens/ProfileScreen';
 import ChatsScreen from './components/screens/ChatsScreen';
+import ContactsScreen from './components/screens/ContactsScreen';
 import SettingsScreen from './components/screens/ChatsScreen';
 
 
@@ -25,12 +26,10 @@ const ProfileStack = createNativeStackNavigator
 
 
 
-
-
 const TabsStackScreen = () => (
 
 
-  <Tabs.Navigator initialRouteName='Chats' screenOptions={{ headerShown: false }}>
+  <Tabs.Navigator initialRouteName='Contacts' screenOptions={{ headerShown: false }}>
     <Tabs.Screen name="Chats"
       component={ChatsScreen}
       options={{
@@ -50,7 +49,17 @@ const TabsStackScreen = () => (
       }}
     />
 
-<Tabs.Screen name="Settings"
+    <Tabs.Screen name="Contacts"
+      component={ContactsScreen}
+      options={{
+        title: 'Contacts', tabBarIcon: ({ size, color }) => (<Ionicons name='people'
+          size={size} color={color} />)
+
+      }}
+    />
+
+
+    <Tabs.Screen name="Settings"
       component={SettingsScreen}
       options={{
         title: 'Settings', tabBarIcon: ({ size, color }) => (<Feather name='settings'
@@ -79,12 +88,10 @@ class App extends Component {
 
 
 
-
-
   render() {
     return (
       <NavigationContainer>
-        <Stack.Navigator initialRouteName='ProfileScreen' >
+        <Stack.Navigator initialRouteName='Login' >
           <Stack.Screen
             name="Home" component={HomeScreen} options={{ headerShown: false }} />
           <Stack.Screen
@@ -93,7 +100,7 @@ class App extends Component {
             name="Login" component={LoginScreen} options={{ headerShown: false }} />
 
           <Stack.Screen
-            name="ProfileScreen" component={TabsStackScreen} options={{ headerShown: false }}/>
+            name="ProfileScreen" component={TabsStackScreen} options={{ headerShown: false }} />
         </Stack.Navigator>
 
 

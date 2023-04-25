@@ -80,11 +80,12 @@ class ProfileScreen extends Component {
 
                     <Text>
                         View Contacts
-                        {/* Add Contacts
+                        Add Contacts
                         Remove Contacts
                         view blocked users
                         block a user 
-                        unblock a user */}
+                        unblock a user 
+                        
                     </Text>
 
 

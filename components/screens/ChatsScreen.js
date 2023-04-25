@@ -5,6 +5,9 @@ import colors from '../../assets/colors/colors';
 import HomeScreen from './HomeScreen';
 import GeneralStyles from '../../styles/GeneralStyles';
 import userLogin from '../../components/screens/RegisterScreen';
+import * as Font from 'expo-font';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 
@@ -23,8 +26,10 @@ class ChatsScreen extends Component {
             hidePassword: true,
             isValidInput: false,
         }
-
+        
     }
+
+    
 
 
     styles = StyleSheet.create({
@@ -36,40 +41,66 @@ class ChatsScreen extends Component {
             flexDirection: 'column',
         },
 
-        createAccountWrapper: {
-            paddingTop: 60,
-            paddingLeft: 53,
-            paddingRight: 38,
+        searchBox: {
+            height: 40,
+            marginTop: 12,
+            borderWidth: 0.1,
+            borderRadius: 10,
+            width: 305,
+            backgroundColor: '#FFFFFF',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+
+        },
+
+        headerContactsWrapper: {
+            height: 41,
+            marginTop: 12,
+            marginLeft: 16,
+            marginRight: 34,
+            alignItems: 'flex-start',
+            justifyContent: 'center',
+            paddingTop: 100,
 
 
         },
 
-        chatsImage: {
-            width: 350,
-            height: 58,
-            alignSelf: 'flex-end',
-
-        },
-
-
-        textFailed: {
-            alignSelf: 'center',
-            color: 'red',
-            fontSize: 12,
-
+        headerContacts: {
+            fontFamily: 'SFProDisplay-Bold',
+            fontSize: 34,
+            color: colors.darkText,
+            lineHeight: 41,
 
         },
 
     });
 
+    componentDidMount() {
+        this.unsubsribe = this.props.navigation.addListener('focus', () => {
+            this.checkLoggedIn();
+        });
+    }
+
+    componentWillUnmount() {
+        this.unsubsribe();
+    }
+
+    checkLoggedIn = async () => {
+
+        const value = await AsyncStorage.getItem("sessionToken");
+        if (value == null) {
+            this.props.navigation.navigate('Login');
+        }
+    }
 
 
 
 
     render() {
 
-        const navigation = this.props.navigation;
 
+        const navigation = this.props.navigation;
         if (this.state.isLoading) {
             return (
 
@@ -86,11 +117,15 @@ class ChatsScreen extends Component {
                 <View style={this.styles.container}>
                     <SafeAreaView>
 
-                        
-
-
-
-
+                        <View style={this.styles.headerContactsWrapper}>
+                            <Text style={this.styles.headerContacts}>
+                                Chats
+                            </Text>
+                            <View>
+                                <TextInput style={this.styles.searchBox} placeholder="Search"
+                                />
+                            </View>
+                        </View>
 
 
 

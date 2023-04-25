@@ -3,6 +3,7 @@ const colors ={
     darkText: '#000000',
     lightBars: '#97FAA7',
     greenBars: '#07B022',
+    mainAppScreens:'#66756A'
 
 }
 

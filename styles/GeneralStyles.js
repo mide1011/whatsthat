@@ -31,7 +31,7 @@ export default StyleSheet.create({
 
     backgroundColor: colors.greenBars,
     borderRadius: 103,
-    heigth: 48,
+    height: 48,
 
     marginHorizontal: 20,
     marginVertical: 10,
@@ -81,6 +81,10 @@ export default StyleSheet.create({
     fontWeight: '100',
     fontSize: 14,
   },
+
+
+
+
 
 
  

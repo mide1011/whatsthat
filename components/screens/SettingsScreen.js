@@ -64,7 +64,6 @@ class SettingsScreen extends Component {
 
 
 
-
     handleEmailInput = (text) => {
 
         if (!this.checkValidEmail(text)) {
@@ -108,11 +107,6 @@ class SettingsScreen extends Component {
         return this.state.isValidEmail;
 
     }
-
-
-
-
-
 
 
 

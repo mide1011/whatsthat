@@ -5,10 +5,15 @@ import colors from '../../assets/colors/colors';
 import HomeScreen from './HomeScreen';
 import GeneralStyles from '../../styles/GeneralStyles';
 import userLogin from '../../components/screens/RegisterScreen';
+import * as EmailValidator from 'email-validator';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 
 class LoginScreen extends Component {
+
+
 
     constructor(props) {
         super(props);
@@ -21,9 +26,13 @@ class LoginScreen extends Component {
             isValidEmail: false,
             isValidPassword: null,
             hidePassword: true,
+            invalidEmail: false,
+            invalidPassword: false,
         }
 
     }
+
+
 
 
     styles = StyleSheet.create({
@@ -64,95 +73,46 @@ class LoginScreen extends Component {
 
 
 
-    handleEmailInput = (text) => {
-
-        if (!this.checkValidEmail(text)) {
-            this.setState({ email: text });
-        }
-
-    }
-
-    handlePasswordInput = (text) => {
-
-        if (!this.checkValidPassword(text)) {
-            this.setState({ password: text });
-
-        }
-
-    }
-
     handleLogin = () => {
 
-        const checkEmail = this.checkValidEmail(this.state.email);
-        const checkPassword = this.isValidPassword(this.state.password);
-
-        if (checkEmail && checkPassword) {
-         this.loginUser();
-        }
+        const PASSWORD_REGEX = new RegExp("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$")
 
 
-    }
-
-    checkValidEmail = (userEmail) => {
-        const re = /^\S+@\S+\.\S+$/;
-        const regex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
-
-        if (re.test(userEmail) || regex.test(userEmail)) {
-            this.setState({ isValidEmail: false });
-        }
-        else {
-            this.setState({ isValidEmail: true });
-        }
-
-        return this.state.isValidEmail;
-
-    }
-
-
-    checkValidPassword = (text) => {
-        const isContainsUppercase = /^(?=.*[A-Z]).*$/;
-        const isContainsLowercase = /^(?=.*[a-z]).*$/;
-        const isContainsNumber = /^(?=.*[0-9]).*$/;
-        const isValidLength = /^.{8,16}$/;
-        const isNonWhiteSpace = /^\S*$/;
-
-
-        if (!isContainsUppercase.test(text)) {
-            this.setState({ isValidPassword: true })
-            this.setState({ errorText: 'Your password must contain a capital letter' })
-
-        }
-        else if (!isContainsLowercase.test(text)) {
-            this.setState({ isValidPassword: true })
-            this.setState({ errorText: 'Your password must contain a lowercase letter' })
-        }
-
-        else if (!isContainsNumber.test(text)) {
-            this.setState({ isValidPassword: true })
-            this.setState({ errorText: 'Your password must contain a number' })
-        }
-        else if (!isValidLength.test(text)) {
-            this.setState({ isValidPassword: true })
-            this.setState({ errorText: 'Your password must be [8-16] characters long' })
-        }
-
-        else if (!isNonWhiteSpace.test(text)) {
-            this.setState({ isValidPassword: true })
-            this.setState({ errorText: 'Your password must be not have a whitespace' })
+        if (!EmailValidator.validate(this.state.email)) {
+            this.setState({ invalidEmail: true })
+            this.setState({ errorText: 'Invalid Email, try again' })
+            return;
         }
 
 
         else {
-            this.setState({ isValidPassword: false })
+            this.setState({ invalidEmail: false })
         }
 
-        return this.state.isValidPassword;
-    };
+
+        if (!PASSWORD_REGEX.test(this.state.password)) {
+            this.setState({ invalidPassword: true })
+            this.setState({
+                errorText: "Password must contain: one number, at least one upper" + ' \n' +
+                    "lower,special, number, and at least 8 characters long)"
+            })
+            return;
+        }
+
+        else {
+            this.setState({ invalidPassword: false })
+        }
 
 
+        this.loginUser()
+
+    }
 
 
-    loginUser = () => {
+    async loginUser() {
+
+        const navigation = this.props.navigation;
+
 
         let to_send = {
             email: this.state.email,
@@ -174,23 +134,63 @@ class LoginScreen extends Component {
 
             .then((response) => {
 
-              if(response.status === 201){
-                return response.json();
-              }
+                if(response.status == 200){
 
-              else if(response.status===400){
+                    return response.json()
 
-                
-              }
+                }
+
+                else if (response.status == 400) {
+                    this.setState({ invalidPassword: true });
+                    this.setState({ errorText: 'Invalid email/password supplied, Try Again' })
+                }
+
+                else if (response.status == 500) {
+                    this.setState({ errorText: 'Try Again' })
+                }
+
+                else {
+
+                    this.setState({ isValidPassword: true });
+                    
+                }
 
             })
 
-            .catch((error) => {
+            .then(async (rJson) => {
+                console.log(rJson)
 
-                console.log(error)
+                try {
+                    await AsyncStorage.setItem("userID", rJson.id)
+                    await AsyncStorage.setItem("sessionToken", rJson.token)
+                    navigation.navigate('ProfileScreen')
+
+                } catch (error) {
+                    console.log(error)
+                }
+
+
             })
 
 
+    }
+
+    componentDidMount() {
+        this.unsubscribe = this.props.navigation.addListener('focus', () => {
+            this.checkLoggedIn();
+        });
+    }
+
+    componentWillUnmount() {
+        this.unsubscribe();
+    }
+
+    checkLoggedIn = async () => {
+        const navigation = this.props.navigation;
+        const value = await AsyncStorage.getItem("sessionToken");
+        if (value != null) {
+            setTimeout(() => { navigation.navigate('ProfileScreen') })
+        }
     }
 
 
@@ -226,29 +226,27 @@ class LoginScreen extends Component {
 
 
                             <View>
-                                <TextInput style={GeneralStyles.inputFieldBox} onChangeText={(text) => this.handleEmailInput(text)} placeholder="Email"
-                                />
-                                {this.state.isValidEmail ? (
-                                    <Text style={this.styles.textFailed}>Please enter a valid email</Text>
+                                <TextInput style={GeneralStyles.inputFieldBox} onChangeText={email => this.setState({ email })} placeholder="Email" />
+                                {this.state.invalidEmail ? (
+                                    <Text style={this.styles.textFailed}>{this.state.errorText}</Text>
                                 ) : (
                                     <Text style={this.styles.textFailed}> </Text>
                                 )}
-
                             </View>
 
                             <View>
 
-                                <TextInput secureTextEntry={this.state.hidePassword} style={GeneralStyles.inputFieldBox}
-                                    onChangeText={(text) => this.handlePasswordInput(text)}
+                                <TextInput secureTextEntry={true} style={GeneralStyles.inputFieldBox}
+                                    onChangeText={password => this.setState({ password })}
                                     placeholder="Password" />
+                            </View>
 
-                                {this.state.isValidPassword ? (
+                            <View>
+                                {this.state.invalidPassword ? (
                                     <Text style={this.styles.textFailed}> {this.state.errorText}</Text>
                                 ) : (
                                     <Text style={this.styles.textFailed}> </Text>
                                 )}
-
-
                             </View>
 
                         </View>
@@ -265,13 +263,12 @@ class LoginScreen extends Component {
 
                             </View>
 
-                            <Pressable style={GeneralStyles.signUpButton} onPress={() => { navigation.navigate('ProfileScreen') }} >
+                            <Pressable style={GeneralStyles.signUpButton} onPress={() => { this.handleLogin(); }} >
                                 <Text style={GeneralStyles.signUpButtonText}>
                                     Login
                                 </Text>
                             </Pressable>
                         </View>
-
 
 
 

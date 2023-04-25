@@ -4,7 +4,7 @@ import { ActivityIndicator, TouchableOpacity } from 'react-native-web';
 import colors from '../../assets/colors/colors';
 import HomeScreen from './HomeScreen';
 import GeneralStyles from '../../styles/GeneralStyles';
-import InputField from './InputValidator';
+import InputField from '../../helpers/InputValidator';
 import * as EmailValidator from 'email-validator';
 
 
@@ -23,7 +23,9 @@ class RegisterScreen extends Component {
       errorText: "",
       invalidEmail: false,
       invalidPassword: false,
-      invalidName: false,
+      invalidFirstName: false,
+      invalidLastName: false,
+
 
     }
 
@@ -105,7 +107,7 @@ class RegisterScreen extends Component {
     else {
       this.setState({ invalidLastName: false })
     }
- 
+
 
 
     if (!EmailValidator.validate(this.state.email)) {
@@ -172,7 +174,7 @@ class RegisterScreen extends Component {
         }
 
         else if (response.status === 500) {
-          this.setState({errorText: 'Try Again' })
+          this.setState({ errorText: 'Try Again' })
         }
 
         else {
