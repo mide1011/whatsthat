@@ -30,8 +30,6 @@ class ChatsScreen extends Component {
     }
 
     
-
-
     styles = StyleSheet.create({
         container: {
             backgroundColor: '#DEF2E7',

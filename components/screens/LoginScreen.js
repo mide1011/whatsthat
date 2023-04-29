@@ -157,12 +157,12 @@ class LoginScreen extends Component {
 
             })
 
-            .then(async (rJson) => {
-                console.log(rJson)
+            .then(async (user) => {
+                console.log(user)
 
                 try {
-                    await AsyncStorage.setItem("userID", rJson.id)
-                    await AsyncStorage.setItem("sessionToken", rJson.token)
+                    await AsyncStorage.setItem("userID", user.id)
+                    await AsyncStorage.setItem("sessionToken", user.token)
                     navigation.navigate('ProfileScreen')
 
                 } catch (error) {

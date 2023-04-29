@@ -2,6 +2,7 @@ import { StyleSheet } from "react-native-web";
 import colors from "../assets/colors/colors";
 
 
+
 export default StyleSheet.create({
 
   homeScreenTextWrapper: {
@@ -83,10 +84,86 @@ export default StyleSheet.create({
   },
 
 
+  searchBox: {
+    width: 305,
+    height: 60,
+    paddingHorizontal: 10,
+    backgroundColor: colors.tabBarTheme,
+    borderWidth: 1,
+    borderColor: '#dcf8c6',
+    borderRadius: 10,
+    margin: 22,
+    marginLeft: 10,
+    marginTop: 10,
+  },
+
+
+
+  headerText:
+  {
+    padding: 5,
+    color: 'black',
+    marginTop: 0,
+    margin: 40,
+    marginBottom: 0,
+    fontSize: 20,
+    color: colors.darkText,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+
+
+  headerWrapper: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 50,
+    paddingBottom: 30,
+  },
+
+  contactsWrapper: {
+
+    marginTop: 12,
+    padding: 8,
+    backgroundColor: '#cbf7d3',
+    width: '100%',
+    height: 55,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderRadius: 35,
+    cursor: 'pointer'
+  },
+
+
+
+  iconSpacing: {
+    marginRight: 10,
+    alignItems: 'center',
+    flexDirection: 'row',
+
+  },
+
+  profilePicture: {
+    alignItems: 'center',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+  },
+
+  
+  profileContainer: {
+    flexGrow: 1,
+    backgroundColor: colors.mainAppScreens,
+    paddingHorizontal: 30,
+    width: '100%',
+    height: '100%',
+    marginBottom: '35%'
+},
 
 
 
 
- 
+
+
 
 })
