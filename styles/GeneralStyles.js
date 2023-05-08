@@ -74,7 +74,7 @@ export default StyleSheet.create({
 
   inputFieldBox: {
 
-    height: 40,
+    height: 50,
     margin: 12,
     borderWidth: 0.1,
     borderRadius: 17,
@@ -85,18 +85,52 @@ export default StyleSheet.create({
 
 
   searchBox: {
-    width: 305,
+    width: '90%',
     height: 60,
     paddingHorizontal: 10,
     backgroundColor: colors.tabBarTheme,
     borderWidth: 1,
-    borderColor: '#dcf8c6',
     borderRadius: 10,
+    borderColor: colors.greenBars,
     margin: 22,
-    marginLeft: 10,
+    marginRight: 5,
     marginTop: 10,
+
   },
 
+
+  searchText:
+  {
+    padding: 5,
+    color: 'black',
+    marginTop: 5,
+    margin: 30,
+    fontSize: 15,
+    fontWeight: 'bold',
+    textAlign: 'center',
+
+  },
+
+
+  chatInfoText:
+  {
+ 
+    padding: 5,
+    color: 'black',
+    marginBottom: 65,
+    fontSize: 15,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginLeft: 40,
+    
+
+  },
+
+  textFailed: {
+    alignSelf: 'center',
+    color: 'red',
+    fontSize: 12,
+  },
 
 
   headerText:
@@ -121,6 +155,14 @@ export default StyleSheet.create({
     paddingBottom: 30,
   },
 
+  headerContent:
+  {
+
+    flexDirection: "row",
+    alignItems: "center",
+
+  },
+
   contactsWrapper: {
 
     marginTop: 12,
@@ -131,8 +173,11 @@ export default StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     borderRadius: 35,
-    cursor: 'pointer'
   },
+
+
+
+
 
 
 
@@ -150,7 +195,7 @@ export default StyleSheet.create({
     borderRadius: 30,
   },
 
-  
+
   profileContainer: {
     flexGrow: 1,
     backgroundColor: colors.mainAppScreens,
@@ -158,7 +203,21 @@ export default StyleSheet.create({
     width: '100%',
     height: '100%',
     marginBottom: '35%'
-},
+  },
+
+  mainAppContainer: {
+
+
+    flex: 1,
+    backgroundColor: colors.mainAppScreens,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexDirection: 'column',
+
+
+  }
+
+
 
 
 

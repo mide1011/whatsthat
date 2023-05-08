@@ -1,15 +1,15 @@
 import { Component } from 'react';
-import { Text, TextInput, View, Image, Button, Alert, SafeAreaView, StyleSheet, Pressable } from 'react-native';
-import { ActivityIndicator, TouchableOpacity } from 'react-native-web';
+import { Text, TextInput, View, SafeAreaView, ScrollView, StyleSheet, ActivityIndicator, FlatList } from 'react-native';
+import { TouchableOpacity } from 'react-native-web';
 import colors from '../../assets/colors/colors';
-import HomeScreen from './HomeScreen';
 import GeneralStyles from '../../styles/GeneralStyles';
-import userLogin from '../../components/screens/RegisterScreen';
-import * as Font from 'expo-font';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
-
+import { FontAwesome, Ionicons } from '@expo/vector-icons'
+import Modal from "react-native-modal";
+import React from 'react';
+import InputValidator from '../../helpers/InputValidator';
+import Moment from 'moment';
+import { GiftedChat } from 'react-native-gifted-chat';
 
 class ChatsScreen extends Component {
 
@@ -17,122 +17,241 @@ class ChatsScreen extends Component {
         super(props);
 
         this.state = {
+            chatDetail: [],
+            messages: [],
+            chatName: '',
+        };
 
-            email: '',
-            password: '',
-            errorText: '',
-            isValidEmail: false,
-            isValidPassword: null,
-            hidePassword: true,
-            isValidInput: false,
-        }
-        
+        this.onSend = this.onSend.bind(this);
+
+
+
     }
 
-    
+
     styles = StyleSheet.create({
         container: {
-            backgroundColor: '#DEF2E7',
             flex: 1,
+            backgroundColor: colors.mainAppScreens,
             alignItems: 'center',
             justifyContent: 'space-between',
             flexDirection: 'column',
+
+
         },
 
-        searchBox: {
-            height: 40,
-            marginTop: 12,
-            borderWidth: 0.1,
-            borderRadius: 10,
-            width: 305,
-            backgroundColor: '#FFFFFF',
+        backButton: {
+
+
+
+
+            flexDirection: "row",
+            alignItems: "center",
+            right: 140,
+
+
+
+        },
+
+
+        chatsWrapper: {
+            marginLeft: 25,
+            fontWeight: 'bold',
+        },
+
+        chatExtraInfoWrapper: {
+            width: '60%',
             flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
+            justifyContent: 'space-around'
+        },
+
+        lastChatText: {
+            marginLeft: 45,
+            fontWeight: 'bold',
+            marginTop: 4,
+
+            color: '#555555'
 
         },
 
-        headerContactsWrapper: {
-            height: 41,
-            marginTop: 12,
-            marginLeft: 16,
-            marginRight: 34,
-            alignItems: 'flex-start',
-            justifyContent: 'center',
-            paddingTop: 100,
-
-
-        },
-
-        headerContacts: {
-            fontFamily: 'SFProDisplay-Bold',
-            fontSize: 34,
-            color: colors.darkText,
-            lineHeight: 41,
-
-        },
-
+        lastMessageDateText: {
+            marginLeft: 65,
+            fontWeight: 'normal',
+            marginTop: 4,
+            color: '#000000'
+        }
     });
 
+
+
+
+    async loadSingleChat() {
+        const sessionToken = await AsyncStorage.getItem("sessionToken");
+        // eslint-disable-next-line react/prop-types
+        const { navigation } = this.props;
+        // eslint-disable-next-line react/prop-types
+        const { id } = this.props.route.params;
+
+        return fetch(`http://localhost:3333/api/1.0.0/chat/${id}`, {
+
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Authorization': sessionToken,
+            },
+
+        })
+            .then((response) => {
+                if (response.status === 200) {
+                    return response.json()
+                }
+
+                else if (response.status === 401) {
+                    this.setState({ errorText: 'Log In and Try Again' })
+                }
+
+                else if (response.status === 500) {
+                    this.setState({ errorText: 'Try Again, Make sure you are Signed in' })
+                }
+
+            })
+
+            .then(async (rJson) => {
+                console.log(rJson)
+                const data = rJson
+                this.setState({ chatDetail: data })
+
+
+            })
+
+            .catch((error) => {
+                console.log(error)
+
+            })
+
+
+    }
+
+
+    async updateChatInfo() {
+        const sessionToken = await AsyncStorage.getItem("sessionToken");
+        // eslint-disable-next-line react/prop-types
+        const { id } = this.props.route.params;
+
+        let to_send = {};
+
+        if (this.state.firstName != this.state.origFirstName && InputValidator.validName(this.state.firstName)) {
+            to_send['first_name'] = this.state.firstName;
+        }
+
+        if (this.state.lastName != this.state.origLastName && InputValidator.validName(this.state.lastName)) {
+            to_send['last_name'] = this.state.lastName;
+        }
+        if (this.state.email != this.state.origEmail && InputValidator.isValidEmail(this.state.email)) {
+            to_send['email'] = this.state.email;
+        }
+        if (this.state.password != this.state.origPassword && InputValidator.isValidPassword(this.state.password)) {
+            to_send['password'] = this.state.password;
+        }
+
+        return fetch(`http://localhost:3333/api/1.0.0/chat/${id}`, {
+
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Authorization': sessionToken,
+            },
+
+            body: JSON.stringify(to_send)
+
+        })
+            .then((response) => {
+                if (response.status === 200) {
+                    this.loadUserInfo()
+                    this.setState({ errorText: 'Successfully Updated Your Details' })
+                }
+
+                else if (response.status === 400) {
+                    this.setState({ errorText: 'Try Again' })
+                }
+
+                else if (response.status === 401) {
+                    this.setState({ errorText: 'Try Again, make sure you are signed in' })
+                }
+
+            })
+
+            .catch((error) => {
+                console.log(error)
+
+            })
+
+
+    }
+
+
     componentDidMount() {
-        this.unsubsribe = this.props.navigation.addListener('focus', () => {
-            this.checkLoggedIn();
+        // eslint-disable-next-line react/prop-types
+        this.unsubscribe = this.props.navigation.addListener('focus', () => {
+            this.loadSingleChat();
+
         });
     }
 
     componentWillUnmount() {
-        this.unsubsribe();
+        this.unsubscribe();
     }
-
-    checkLoggedIn = async () => {
-
-        const value = await AsyncStorage.getItem("sessionToken");
-        if (value == null) {
-            this.props.navigation.navigate('Login');
-        }
-    }
-
 
 
 
     render() {
 
-
+        // const { modalVisible } = this.state;
+        // eslint-disable-next-line react/prop-types
         const navigation = this.props.navigation;
-        if (this.state.isLoading) {
-            return (
 
-                <View>
-                    <ActivityIndicator />
-                </View>
 
-            );
 
-        }
 
-        else {
-            return (
-                <View style={this.styles.container}>
-                    <SafeAreaView>
 
-                        <View style={this.styles.headerContactsWrapper}>
-                            <Text style={this.styles.headerContacts}>
-                                Chats
-                            </Text>
-                            <View>
-                                <TextInput style={this.styles.searchBox} placeholder="Search"
-                                />
-                            </View>
+        return (
+
+            <View style={GeneralStyles.mainAppContainer}>
+                <SafeAreaView>
+
+
+                    <View style={GeneralStyles.headerWrapper}>
+
+                        <View style={this.styles.backButton}>
+
+                            <TouchableOpacity
+                                // eslint-disable-next-line react/prop-types
+                                onPress={() => { navigation.navigate('Messages') }} >
+                                <Ionicons name="chevron-back" size={33} />
+                            </TouchableOpacity>
+
                         </View>
 
+                    </View>
+
+                    <View>
+
+                        <Text>
+                            {this.state.chats.name}
+                        </Text>
+
+                    </View>
 
 
-                    </SafeAreaView>
 
-                </View>
-            );
+                </SafeAreaView>
 
-        }
+
+            </View>
+        );
+
+
+
 
 
 

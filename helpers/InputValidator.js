@@ -4,59 +4,48 @@ import { ActivityIndicator, TouchableOpacity } from 'react-native-web';
 import colors from '../assets/colors/colors';
 import HomeScreen from '../components/screens/HomeScreen';
 import GeneralStyles from '../styles/GeneralStyles';
-
-
-
-
-class InputField extends Component {
-
-
-    constructor(props) {
-        super(props);
-
-        this.state = {
- 
-            email: '',
-            password: '',
-            errorText: '',
-            isValidEmail: false,
-            isValidPassword: null,
-            hidePassword: true,
-            isValidInput: false,
-        }
-
-    }
-
-    handleEmailInput = (text) => {
-
-        if (!this.checkValidEmail(text)) {
-          this.setState({ email: text });
-        }
-    
-      }
-    
-      handlePasswordInput = (text) => {
-    
-        if (!this.checkValidPassword(text)) {
-          this.setState({ password: text });
-        }
-
-    }
-
-
-    
-      
+import * as EmailValidator from 'email-validator';
 
 
 
 
 
+const isValidEmail = (email) => {
+  return EmailValidator.validate(email)
+
+}
+
+const isValidPassword = (password) => {
+
+  const PASSWORD_REGEX = new RegExp("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$")
+  return PASSWORD_REGEX.test(password)
 
 
+}
+
+const validName = (name) => {
+  const NAME_REGEX = /^[a-z ,.'-]+$/i;
+  return NAME_REGEX.test(name)
+}
 
 
-};
-export default InputField;
+const validateDetails = (firstName, lastName, email, password) => {
+
+
+  return (validName(firstName) && validName(lastName) && isValidEmail(email) && isValidPassword(password))
+
+
+  }
+
+
+  const InputValidator = {
+    isValidEmail,
+    isValidPassword,
+    validName,
+    validateDetails
+  }
+
+  export default InputValidator;
 
 
 

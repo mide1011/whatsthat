@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { Text, TextInput, View, SafeAreaView, ScrollView, StyleSheet, Pressable, FlatList } from 'react-native';
+import { Text, TextInput, View, SafeAreaView, ScrollView, StyleSheet, ActivityIndicator, FlatList } from 'react-native';
 import { TouchableOpacity } from 'react-native-web';
 import colors from '../../assets/colors/colors';
 import GeneralStyles from '../../styles/GeneralStyles';
@@ -25,6 +25,8 @@ class ContactsScreen extends Component {
             searching: false,
             disabled: false,
             modalVisible: true,
+            isLoading: true,
+            currentUser: null,
 
         };
 
@@ -55,16 +57,7 @@ class ContactsScreen extends Component {
 
 
 
-        searchText:
-        {
-            padding: 5,
-            color: 'black',
-            marginTop: 5,
-            margin: 30,
-            fontSize: 15,
-            fontWeight: 'bold',
-            textAlign: 'center',
-        },
+
 
         centeredView: {
             flex: 1,
@@ -128,34 +121,18 @@ class ContactsScreen extends Component {
         },
 
 
-        headerContent:
-        {
-            // width: "100%",
-            flexDirection: "row",
-            // justifyContent: "space-around",
-            alignItems: "center",
 
-        },
 
 
 
 
     });
 
-    componentDidMount() {
-        // eslint-disable-next-line react/prop-types
-        this.unsubscribe = this.props.navigation.addListener('focus', () => {
-            this.loadContacts();
-        });
-    }
 
-    componentWillUnmount() {
-        this.unsubscribe();
-    }
 
     async searchForContacts(query, limit = 10, offset = 0) {
         const sessionToken = await AsyncStorage.getItem("sessionToken");
-
+        const currentUserID = await AsyncStorage.getItem("userID");
 
         return fetch(`http://localhost:3333/api/1.0.0/search?q=${query}&search_in=all&limit=${limit}&offset=${offset}`, {
             method: 'GET',
@@ -188,12 +165,14 @@ class ContactsScreen extends Component {
 
 
 
+
             })
 
             .then(async (rJson) => {
                 console.log(rJson)
                 const data = rJson
                 this.setState({ searchedContacts: data })
+                this.setState({ currentUser: currentUserID })
 
             })
 
@@ -379,27 +358,44 @@ class ContactsScreen extends Component {
     searchItemComponent = ({ item }) => {
 
 
-        return (
-            <View style={GeneralStyles.contactsWrapper} key={item.user_id}>
-                <Text style={this.styles.searchText}>
-                    {item.given_name + " " + item.family_name}
-                </Text>
-                <TouchableOpacity onPress={() => this.addContact(item)} >
-                    <Ionicons name="md-person-add" size={30} color="#36942B" />
-                </TouchableOpacity>
 
+        if (item.user_id != this.state.currentUser) {
 
+            return (
+                <View style={GeneralStyles.contactsWrapper} key={item.user_id}>
+                    <Text style={GeneralStyles.searchText}>
+                        {item.given_name + " " + item.family_name}
+                    </Text>
 
+                    {
+                        this.state.contacts.some(user => user.user_id === item.user_id) &&
+                        (
+                            <Ionicons name="ios-happy-sharp" size={30} color="FC0000" />
+                        )
 
-            </View>
+                    }
 
-        )
+                    {
+                        (
+                            !this.state.contacts.some(user => user.user_id === item.user_id) &&
+                            <TouchableOpacity onPress={() => { this.addContact(item); }} >
+                                <Ionicons name="md-person-add" size={30} color="#36942B" />
+                            </TouchableOpacity>
+
+                        )
+                    }
+
+                </View>
+
+            )
+        }
+
     }
 
     contactItemComponent = ({ item }) => {
         return (
             <View style={GeneralStyles.contactsWrapper} key={item.user_id}>
-                <Text style={this.styles.searchText}>
+                <Text style={GeneralStyles.searchText}>
                     {item.first_name + " " + item.last_name}
                 </Text>
 
@@ -425,99 +421,131 @@ class ContactsScreen extends Component {
     }
 
 
+    manageModalVisibility = () => {
+        this.setState({ modalVisible: !this.state.modalVisible })
+
+
+    }
+
+    componentDidMount() {
+        // eslint-disable-next-line react/prop-types
+        this.unsubscribe = this.props.navigation.addListener('focus', () => {
+            this.loadContacts();
+            this.setState({ isLoading: false })
+        });
+    }
+
+    componentWillUnmount() {
+        this.unsubscribe();
+    }
 
 
 
     render() {
 
-        const { modalVisible } = this.state;
+        // const { modalVisible } = this.state;
+        // eslint-disable-next-line react/prop-types
+        const navigation = this.props.navigation;
 
+        if (this.state.isLoading) {
+            return (<View>
+                <ActivityIndicator size="large" />
+            </View>)
 
+        }
 
-        return (
+        else {
+            return (
 
-            <View style={this.styles.container}>
-                <SafeAreaView>
+                <View style={GeneralStyles.mainAppContainer}>
+                    <SafeAreaView>
 
-                    <View style={GeneralStyles.headerWrapper}>
+                        <View style={GeneralStyles.headerWrapper}>
 
-                        <View style={this.styles.headerContent}>
+                            <View style={GeneralStyles.headerContent}>
 
-                            <TouchableOpacity
-                                onPress={() => this.viewBlocked()}>
-                                <MaterialCommunityIcons name="block-helper" size={33} color="#C90A0A" />
-                            </TouchableOpacity>
+                                <TextInput style={GeneralStyles.searchBox} placeholder="Search" onChangeText={(text) => this.setState({ searchedValue: text })}
+                                    onChange={() => { this.searchForContacts(this.state.searchedValue) }}
+                                />
 
-                            <TextInput style={GeneralStyles.searchBox} placeholder="Search" onChangeText={(text) => this.setState({ searchedValue: text })}
-                                onChange={() => { this.searchForContacts(this.state.searchedValue) }}
-                            />
-
-                        </View>
-
-                    </View>
-
-
-                    <ScrollView contentContainerStyle={GeneralStyles.profileContainer} >
-
-
-                        {
-                            this.state.searchedValue && this.state.searchedContacts.length > 0 ?
-
-                                (<FlatList
-
-                                    data={this.state.searchedContacts}
-                                    renderItem={this.searchItemComponent}
-                                    ListHeaderComponent={<Text style={GeneralStyles.headerText}> WhatsThat Users </Text>}
-
-                                />) : (
-
-                                    <FlatList
-
-                                        data={this.state.contacts}
-                                        renderItem={this.contactItemComponent}
-                                        ListEmptyComponent={<Text style={GeneralStyles.headerText}> Search to add Contacts </Text>}
-                                    />
-                                )
-
-                        }
-
-                        {
-                            this.state.errorText.length > 0 &&
-
-                            <View>
-                                <Modal
-                                    animationType="slide"
-                                    backdropColor="black"
-                                    backdropOpacity={0.9}
-
-                                    isVisible={modalVisible}
-                                >
-                                    <View style={this.styles.centeredView}>
-                                        <View style={this.styles.error}>
-                                            <Text style={this.styles.modalText}>{this.state.errorText}</Text>
-                                            <Pressable
-                                                style={[this.styles.button, this.styles.buttonClose]}
-                                                onPress={() => this.setState({ modalVisible: !modalVisible })}>
-
-                                                <Text style={this.styles.textStyle}>Close</Text>
-                                            </Pressable>
-                                        </View>
-                                    </View>
-                                </Modal>
+                                <TouchableOpacity
+                                    // eslint-disable-next-line react/prop-types
+                                    onPress={() => { navigation.navigate('Blocked') }} >
+                                    <Ionicons name="exit-outline" size={33} />
+                                </TouchableOpacity>
 
                             </View>
 
-
-                        }
-
-
-                    </ScrollView>
-
-                </SafeAreaView>
+                        </View>
 
 
-            </View>
-        );
+                        <ScrollView contentContainerStyle={GeneralStyles.profileContainer} >
+
+
+                            {
+                                this.state.searchedValue && this.state.searchedContacts.length > 0 ?
+
+                                    (<FlatList
+
+                                        data={this.state.searchedContacts}
+                                        renderItem={this.searchItemComponent}
+                                        ListHeaderComponent={<Text style={GeneralStyles.headerText}> WhatsThat Users </Text>}
+
+                                    />) : (
+
+                                        <FlatList
+
+                                            data={this.state.contacts}
+                                            renderItem={this.contactItemComponent}
+                                            ListHeaderComponent={<Text style={GeneralStyles.headerText}> Your Contacts </Text>}
+                                            ListEmptyComponent={<Text style={GeneralStyles.headerText}> Search to add Contacts </Text>}
+                                        />
+                                    )
+
+                            }
+
+                            {
+                                this.state.errorText.length > 0 &&
+
+
+
+                                <View>
+                                    <Modal
+                                        animationType="slide"
+                                        backdropColor="black"
+                                        backdropOpacity={0.9}
+
+                                        isVisible={this.state.modalVisible}
+                                    >
+                                        <View style={this.styles.centeredView}>
+                                            <View style={this.styles.error}>
+                                                <Text style={this.styles.modalText}>{this.state.errorText}</Text>
+                                                <TouchableOpacity
+                                                    style={[this.styles.button, this.styles.buttonClose]}
+                                                    onPress={this.manageModalVisibility}>
+                                                    <Text style={this.styles.textStyle}>Close</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    </Modal>
+
+                                </View>
+
+
+                            }
+
+
+                        </ScrollView>
+
+                    </SafeAreaView>
+
+
+                </View>
+            );
+        }
+
+
+
 
 
 
