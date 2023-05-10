@@ -1,9 +1,3 @@
-import { Component } from 'react';
-import { Text, TextInput, View, Image, Button, Alert, SafeAreaView, StyleSheet, Pressable } from 'react-native';
-import { ActivityIndicator, TouchableOpacity } from 'react-native-web';
-import colors from '../assets/colors/colors';
-import HomeScreen from '../components/screens/HomeScreen';
-import GeneralStyles from '../styles/GeneralStyles';
 import * as EmailValidator from 'email-validator';
 
 

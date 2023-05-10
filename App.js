@@ -15,22 +15,35 @@ import BlockedScreen from './components/screens/BlockedScreen';
 import colors from './assets/colors/colors';
 import React from 'react';
 import ChatsScreen from './components/screens/ChatsScreen';
+
+
 const Stack = createNativeStackNavigator();
 const Tabs = createBottomTabNavigator();
 
 
 
-const MessageStack = () => (
+
+
+
+// const MessageStack = () => (
+//   <Stack.Navigator>
+//     <Stack.Screen name="Messages" component={MessagesScreen} options={{ headerShown: false }} />
+//     <Tabs.Screen name="Chats" component={ChatsScreen} options={{ headerShown: false}} />
+//   </Stack.Navigator>
+// );
+
+
+const ContactsStack = () => (
   <Stack.Navigator>
-    <Stack.Screen name="Messages" component={MessagesScreen} options={{ headerShown: false }} />
-    <Stack.Screen name="Chats" component={ChatsScreen}  options={{ headerShown: false }}/>
+    <Stack.Screen name="Contacts" component={ContactsScreen} options={{ headerShown: false }} />
+    <Stack.Screen name="Blocked" component={BlockedScreen} options={{ headerShown: false }} />
   </Stack.Navigator>
 );
 
 
 const TabsStackScreen = () => (
 
-  <Tabs.Navigator initialRouteName='Chats' screenOptions={{
+  <Tabs.Navigator initialRouteName='Messages' screenOptions={{
     headerShown: false, tabBarShowLabel: false,
 
     tabBarStyle: {
@@ -38,7 +51,7 @@ const TabsStackScreen = () => (
       bottom: 25,
       left: 20,
       right: 20,
-      backgroundColor: colors.tabBarTheme,
+      backgroundColor: colors.mainTheme,
       borderRadius: 15,
       height: 90,
 
@@ -48,8 +61,7 @@ const TabsStackScreen = () => (
   }}>
 
 
-
-    <Tabs.Screen name='Messages' component={MessageStack}
+    <Tabs.Screen name='Messages' component={MessagesScreen}
       options={{
 
         tabBarIcon: ({ focused }) => {
@@ -68,15 +80,20 @@ const TabsStackScreen = () => (
     />
 
 
-
-
-
-    <Tabs.Screen name="Blocked" component={BlockedScreen} options={{
+    <Tabs.Screen name='Chats' component={ChatsScreen} options={{
       tabBarButton: () => null,
       tabBarVisible: false,
+      tabBarStyle: {
+        display: 'none'
+      },
+      headerBackTitleVisible: false,
+      
+
     }} />
 
-    <Tabs.Screen name='Contacts' component={ContactsScreen}
+
+
+    <Tabs.Screen name='ContactStack' component={ContactsStack}
       options={{
         tabBarIcon: ({ focused }) => {
 

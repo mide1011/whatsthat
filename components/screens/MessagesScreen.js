@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { Text, TextInput, View, SafeAreaView, ScrollView, StyleSheet, ActivityIndicator, FlatList } from 'react-native';
+import { Text, TextInput, View, SafeAreaView, ScrollView, StyleSheet, Image, ActivityIndicator, FlatList } from 'react-native';
 import { TouchableOpacity } from 'react-native-web';
 import colors from '../../assets/colors/colors';
 import GeneralStyles from '../../styles/GeneralStyles';
@@ -22,6 +22,7 @@ class MessagesScreen extends Component {
             allChats: [],
             chatDetail: [],
             chatName: '',
+            isLoading: true,
 
 
         };
@@ -49,25 +50,22 @@ class MessagesScreen extends Component {
         },
 
         chatExtraInfoWrapper: {
-            width: '60%',
+            width: '80%',
             flexDirection: 'row',
-            justifyContent: 'space-around'
+            justifyContent: 'space-between'
         },
 
         lastChatText: {
-            marginLeft: 45,
-            fontWeight: 'bold',
-            marginTop: 4,
-
-            color: '#555555'
+            fontWeight: '400',
+            fontSize: 14,
+            color: 'grey',
+            width: '100%',
 
         },
 
         lastMessageDateText: {
-            marginLeft: 65,
-            fontWeight: 'normal',
-            marginTop: 4,
-            color: '#000000'
+            fontSize: 14,
+            color: 'grey',
         },
 
 
@@ -82,6 +80,11 @@ class MessagesScreen extends Component {
             height: 20,
             borderRadius: 25,
         },
+
+        chatNameText: {
+            fontWeight: 'bold',
+            fontSize: 14,
+        }
 
 
 
@@ -186,30 +189,48 @@ class MessagesScreen extends Component {
         Moment.locale('en');
         return (
             // eslint-disable-next-line react/prop-types
-            <TouchableOpacity onPress={() => { navigation.navigate('Chats', {id: item.chat_id}) }}>
-                <View style={GeneralStyles.contactsWrapper} key={item.user_id}>
-
-                    <View style={this.styles.chatPfpWrapper}>
-                        <View style={this.styles.userChatPfp}>
-
-                        </View>
-
-                    </View>
+            <TouchableOpacity key={item.chat_id} onPress={() => { { navigation.navigate('Chats', { chatID: item.chat_id }) } }}>
+                {/* <View style={GeneralStyles.chatWrapper} key={item.user_id}>
 
                     <Text style={GeneralStyles.chatInfoText}>
                         {item.name}
                     </Text>
 
                     <View style={this.styles.chatExtraInfoWrapper}>
-                        <Text style={this.styles.lastChatText} numberOfLines={1}>{item.last_message.message ?? '......'}</Text>
-                        <Text style={this.styles.lastMessageDateText}>{item.last_message.timestamp ? (Moment(item.last_message.timestamp).format('d MMM')
-                        ) : ('......')}
+
+                        <View>
+                        <Text style={this.styles.lastChatText} numberOfLines={1}>{item.last_message.message ?? '...'}</Text>
+                        <Text style={this.styles.lastMessageDateText} numberOfLines={1}>{item.last_message.timestamp ? (Moment(item.last_message.timestamp).format('d MMM')
+                        ) : ('...')}
                         </Text>
+
+                        </View>
+                       
                     </View>
 
 
 
+                </View> */}
+
+                <View style={GeneralStyles.chatContainer}>
+
+                    {/* <Image style={GeneralStyles.avatar}></Image> */}
+                    <View style={GeneralStyles.leftContainer}>
+                        <View style={GeneralStyles.midContainer}>
+                            <Text style={this.styles.chatNameText}> {item.name} </Text>
+                            <Text numberofLines={1} elipsizeMode='tail' style={this.styles.lastChatText}> {item.last_message.message}</Text>
+                        </View>
+
+
+                    </View>
+
+
+                    <Text style={this.styles.lastMessageDateText}> {(Moment(item.last_message.timestamp).format('DD/MM/YY')
+                    )} </Text>
                 </View>
+
+
+
             </TouchableOpacity>
 
         )
@@ -228,6 +249,7 @@ class MessagesScreen extends Component {
         // eslint-disable-next-line react/prop-types
         this.unsubscribe = this.props.navigation.addListener('focus', () => {
             this.loadChats();
+            this.setState({ isLoading: false })
 
         });
     }
@@ -245,55 +267,68 @@ class MessagesScreen extends Component {
         const navigation = this.props.navigation;
         const newChatName = '';
 
+        if (this.state.isLoading) {
+            return (<View>
+                <ActivityIndicator size="large" />
+            </View>)
 
+        }
 
-        return (
+        else {
+            return (
 
-            <View style={GeneralStyles.mainAppContainer}>
-                <SafeAreaView>
+                <View style={GeneralStyles.mainAppContainer}>
+                    <SafeAreaView>
 
-                    <View style={GeneralStyles.headerWrapper}>
+                        <View style={GeneralStyles.headerWrapper}>
 
-                        <View style={GeneralStyles.headerContent}>
+                            <View style={GeneralStyles.headerContent}>
 
-                            <TextInput style={GeneralStyles.searchBox} placeholder="Enter a chat name here"
-                                onChangeText={chatName => this.setState({ chatName })}
-                            />
+                                <TextInput style={GeneralStyles.searchBox} placeholder="Enter a chat name here"
+                                    onChangeText={chatName => this.setState({ chatName })}
+                                />
 
-                            <TouchableOpacity onPress={() => { this.createChatComponent(); }}
-                            >
-                                <FontAwesome name="pencil-square-o" size={33} />
-                            </TouchableOpacity>
+                                <TouchableOpacity onPress={() => { this.createChatComponent(); }}
+                                >
+                                    <FontAwesome name="pencil-square-o" size={33} />
+                                </TouchableOpacity>
+
+                            </View>
 
                         </View>
 
-                    </View>
+
+                        <ScrollView contentContainerStyle={GeneralStyles.profileContainer} >
 
 
-                    <ScrollView contentContainerStyle={GeneralStyles.profileContainer} >
+                            <FlatList
 
-
-                        <FlatList
-
-                            data={this.state.allChats}
-                            renderItem={this.chatsItemComponent}
-                            ListHeaderComponent={<Text style={GeneralStyles.headerText}> Your Chats </Text>}
-                            ListEmptyComponent={<Text style={GeneralStyles.headerText}>  Press Icon to start new Converstions  </Text>}
-                        />
-
-
+                                data={this.state.allChats}
+                                renderItem={this.chatsItemComponent}
+                                ListHeaderComponent={<Text style={GeneralStyles.headerText}> Your Chats </Text>}
+                                ListEmptyComponent={<Text style={GeneralStyles.headerText}>  Press Icon to start new Converstions  </Text>}
+                                keyExtractor={(item) => item.chat_id}
+                            />
 
 
 
 
 
-                    </ScrollView>
-
-                </SafeAreaView>
 
 
-            </View>
-        );
+                        </ScrollView>
+
+                    </SafeAreaView>
+
+
+                </View>
+            );
+
+        }
+
+
+
+
 
 
 

@@ -88,7 +88,7 @@ export default StyleSheet.create({
     width: '90%',
     height: 60,
     paddingHorizontal: 10,
-    backgroundColor: colors.tabBarTheme,
+    backgroundColor: colors.mainTheme,
     borderWidth: 1,
     borderRadius: 10,
     borderColor: colors.greenBars,
@@ -114,7 +114,7 @@ export default StyleSheet.create({
 
   chatInfoText:
   {
- 
+
     padding: 5,
     color: 'black',
     marginBottom: 65,
@@ -122,7 +122,7 @@ export default StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginLeft: 40,
-    
+
 
   },
 
@@ -147,6 +147,22 @@ export default StyleSheet.create({
   },
 
 
+  chatHeaderText:
+  {
+
+    color: 'black',
+    fontSize: 18,
+    color: colors.darkText,
+    fontWeight: 'bold',
+    flexDirection: "row",
+    alignItems: "center",
+    textAlign: 'center',
+
+
+  },
+
+
+
   headerWrapper: {
     flex: 1,
     alignItems: 'center',
@@ -163,11 +179,38 @@ export default StyleSheet.create({
 
   },
 
+
+
+  chatContainer: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-between',
+    padding: 10,
+
+    
+  },
+
+  leftContainer: {
+    flexDirection: 'row',
+  },
+
+  midContainer: {
+    justifyContent: 'space-around',
+  },
+
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 50,
+    marginRight:10,
+  },
+
+
   contactsWrapper: {
 
     marginTop: 12,
     padding: 8,
-    backgroundColor: '#cbf7d3',
+    backgroundColor: colors.mainTheme,
     width: '100%',
     height: 55,
     flexDirection: 'row',
@@ -176,7 +219,17 @@ export default StyleSheet.create({
   },
 
 
+  chatWrapper: {
 
+    marginTop: 12,
+    padding: 8,
+    backgroundColor: colors.mainTheme,
+    width: '100%',
+    height: 55,
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    borderRadius: 35,
+  },
 
 
 
@@ -198,7 +251,7 @@ export default StyleSheet.create({
 
   profileContainer: {
     flexGrow: 1,
-    backgroundColor: colors.mainAppScreens,
+    backgroundColor: colors.background,
     paddingHorizontal: 30,
     width: '100%',
     height: '100%',
@@ -209,7 +262,7 @@ export default StyleSheet.create({
 
 
     flex: 1,
-    backgroundColor: colors.mainAppScreens,
+    backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'space-between',
     flexDirection: 'column',
