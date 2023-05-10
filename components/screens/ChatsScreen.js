@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Text, TextInput, View, SafeAreaView, ScrollView, StyleSheet, ActivityIndicator, FlatList } from 'react-native';
+import { Text, TextInput, View, ImageBackground, SafeAreaView, ScrollView, StyleSheet, ActivityIndicator, FlatList } from 'react-native';
 import { TouchableOpacity } from 'react-native-web';
 import colors from '../../assets/colors/colors';
 import GeneralStyles from '../../styles/GeneralStyles';
@@ -7,8 +7,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome, Ionicons } from '@expo/vector-icons'
 import Modal from "react-native-modal";
 import InputValidator from '../../helpers/InputValidator';
-import { GiftedChat } from 'react-native-gifted-chat'
+import Moment from 'moment';
 import ChatHelper from '../../helpers/ChatHelper';
+import ChatBG from '../../assets/images/chatBG.png'
+//import  Colors  from 'react-native/Libraries/NewAppScreen';
 
 class ChatsScreen extends Component {
 
@@ -16,7 +18,7 @@ class ChatsScreen extends Component {
         super(props);
 
         this.state = {
-            chatDetail: [],
+            chatMessages: [],
             messages: [],
             messagesForServer: [],
             message: '',
@@ -24,6 +26,7 @@ class ChatsScreen extends Component {
             chatOwnerID: '',
             chatID: '',
             isLoading: true,
+            currentUserID: '',
 
 
 
@@ -49,14 +52,9 @@ class ChatsScreen extends Component {
 
         backButton: {
 
-
-
-
             flexDirection: "row",
             alignItems: "center",
             right: 140,
-
-
 
         },
 
@@ -94,14 +92,15 @@ class ChatsScreen extends Component {
             width: '100%',
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: colors.tabBarTheme,
+            backgroundColor: colors.mainTheme,
         },
 
         headerIconsBar: {
 
             height: 50,
             width: '100%',
-            backgroundColor: colors.chatsBackgroundColor,
+            backgroundColor: '#d4d4d4',
+            opacity: '80%',
         },
 
         toggleIcons: {
@@ -117,6 +116,40 @@ class ChatsScreen extends Component {
         },
 
 
+        chatBoxContainer: {
+            padding: 10,
+
+        },
+
+        chatBox: {
+            borderRadius: 5,
+            padding: 10,
+
+        },
+
+        name: {
+            color: '#3cb371',
+            fontWeight: 'bold',
+            marginBottom: 5,
+        },
+
+        message: {
+            //marginVertical: 5,
+        },
+
+        time: {
+            alignSelf: 'flex-end',
+            color: 'grey',
+            opacity: '60%',
+        },
+
+        backgroundStyle: {
+            width: '100%',
+            height: '100%',
+
+        }
+
+
     });
 
 
@@ -128,6 +161,7 @@ class ChatsScreen extends Component {
         const { navigation } = this.props;
         // eslint-disable-next-line react/prop-types
         const { chatID } = this.props.route.params;
+        const userID = await AsyncStorage.getItem("userID");
 
         return fetch(`http://localhost:3333/api/1.0.0/chat/${chatID}`, {
 
@@ -155,20 +189,21 @@ class ChatsScreen extends Component {
 
             .then(async (messages) => {
                 console.log(messages)
-                console.log('chatID')
+
 
 
                 const data = messages
-                this.setState({ chatDetail: data })
+                this.setState({ chatMessages: data })
+                this.setState({ currentUserID: userID })
                 this.setState({ chatName: data.name })
                 this.setState({ chatOwnerID: data.creator.user_id })
                 this.setState({ chatID: chatID })
-                this.setState((prevState) => ({
-                    data: {
-                        ...prevState.data,
-                        [chatID]: [],
-                    },
-                }));
+                // this.setState((prevState) => ({
+                //     data: {
+                //         ...prevState.data,
+                //         [chatID]: [],
+                //     },
+                // }));
 
             })
 
@@ -330,22 +365,56 @@ class ChatsScreen extends Component {
     onSend(messages = []) {
 
 
-        const { chatID } = this.state;
+
 
         // this.setState(previousState => ({
         //     messages: GiftedChat.append(previousState.messages, messages),
         // }));
 
 
-        this.setState((prevState) => ({
-            messages: {
-                ...prevState.messages,
-                [chatID]: GiftedChat.append(prevState.messages[chatID], messages),
-            },
-        }));
 
-        // this.setState({ message: messages[0].text });
-        // this.sendMessage(this.state.chatID);
+    }
+
+    chatRoomItemComponent = ({ item }) => {
+        // eslint-disable-next-line react/prop-types
+        const navigation = this.props.navigation;
+        Moment.locale('en');
+        const userID = String(item.author.user_id);
+        const currentUser = this.state.currentUserID;
+
+        return (
+            <View style={this.styles.chatBoxContainer}>
+
+                <View style={[this.styles.chatBox,
+                {
+                    backgroundColor: ChatHelper.isMyMessage(userID, currentUser) ? colors.chatsBackgroundColor : '#d4d4d4',
+                    marginLeft: ChatHelper.isMyMessage(userID, currentUser) ? 45 : 0,
+                    marginRight: ChatHelper.isMyMessage(userID, currentUser) ? 0 : 45,
+
+                }
+                ]}>
+
+                    {!ChatHelper.isMyMessage(userID, currentUser) && <Text style={this.styles.name}>
+                        {item.author.first_name}
+                    </Text>}
+
+                    <Text style={this.styles.message}>
+                        {item.message}
+                    </Text>
+
+                    <Text style={this.styles.time}>
+                        {(Moment(item.timestamp).fromNow())}
+                    </Text>
+
+                </View>
+
+            </View>
+
+
+
+
+        );
+
     }
 
 
@@ -358,12 +427,6 @@ class ChatsScreen extends Component {
         // const { modalVisible } = this.state;
         // eslint-disable-next-line react/prop-types
         const navigation = this.props.navigation;
-        const { messages } = this.state;
-        // eslint-disable-next-line react/prop-types
-        const { chatID } = this.props.route.params;
-        const chatMessages = messages[chatID] || [];
-
-
 
 
 
@@ -421,28 +484,25 @@ class ChatsScreen extends Component {
 
 
 
+                <FlatList
 
-                <GiftedChat
-                    messages={chatMessages}
-                    onSend={messages => this.onSend(messages)}
-                    renderUsernameOnMessage={true}
-                    user={{
-                        _id: 1,
-                        //name: this.state.chatName,
-                        //avatar:,
-                    }}
-
-                    renderBubble={ChatHelper.renderBubble}
-                    renderSend={ChatHelper.renderSend}
-                    scrollToBottom
-                    isAnimated
-                    scrollToBottomComponent={ChatHelper.scrollToBottomComponent}
-                    renderInputToolbar={ChatHelper.renderInputToolbar}
-                    style={{ backgroundColor: 'transparent' }}
-
-
+                    data={this.state.chatMessages.messages}
+                    renderItem={this.chatRoomItemComponent}
+                    inverted
 
                 />
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
