@@ -83,6 +83,11 @@ export default StyleSheet.create({
     fontSize: 14,
   },
 
+  
+  sendInput:{
+
+  },
+
 
   searchBox: {
     width: '90%',

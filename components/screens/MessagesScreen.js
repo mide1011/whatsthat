@@ -190,27 +190,7 @@ class MessagesScreen extends Component {
         return (
             // eslint-disable-next-line react/prop-types
             <TouchableOpacity key={item.chat_id} onPress={() => { { navigation.navigate('Chats', { chatID: item.chat_id }) } }}>
-                {/* <View style={GeneralStyles.chatWrapper} key={item.user_id}>
-
-                    <Text style={GeneralStyles.chatInfoText}>
-                        {item.name}
-                    </Text>
-
-                    <View style={this.styles.chatExtraInfoWrapper}>
-
-                        <View>
-                        <Text style={this.styles.lastChatText} numberOfLines={1}>{item.last_message.message ?? '...'}</Text>
-                        <Text style={this.styles.lastMessageDateText} numberOfLines={1}>{item.last_message.timestamp ? (Moment(item.last_message.timestamp).format('d MMM')
-                        ) : ('...')}
-                        </Text>
-
-                        </View>
-                       
-                    </View>
-
-
-
-                </View> */}
+                
 
                 <View style={GeneralStyles.chatContainer}>
 

@@ -4,7 +4,7 @@ import { TouchableOpacity } from 'react-native-web';
 import colors from '../../assets/colors/colors';
 import GeneralStyles from '../../styles/GeneralStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FontAwesome, Ionicons } from '@expo/vector-icons'
+import { FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import Modal from "react-native-modal";
 import InputValidator from '../../helpers/InputValidator';
 import Moment from 'moment';
@@ -27,6 +27,9 @@ class ChatsScreen extends Component {
             chatID: '',
             isLoading: true,
             currentUserID: '',
+            updateChatName: false,
+            newChatName: '',
+
 
 
 
@@ -34,7 +37,7 @@ class ChatsScreen extends Component {
 
         };
 
-        this.onSend = this.onSend.bind(this);
+        // this.onSend = this.onSend.bind(this);
 
     }
 
@@ -93,7 +96,11 @@ class ChatsScreen extends Component {
             flexDirection: 'row',
             alignItems: 'center',
             backgroundColor: colors.mainTheme,
+            justifyContent: 'space-between',
         },
+
+
+
 
         headerIconsBar: {
 
@@ -107,10 +114,7 @@ class ChatsScreen extends Component {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'flex-end',
-            justifyContent: "space-between",
-            alignItems: 'center',
-            flexDirection: 'row',
-
+            marginRight: 10,
 
 
         },
@@ -147,13 +151,127 @@ class ChatsScreen extends Component {
             width: '100%',
             height: '100%',
 
+        },
+
+
+        sendBoxContainer: {
+            flexDirection: 'row',
+            margin: 10,
+            alignItems: 'flex-end',
+
+        },
+
+        sendBoxMainContainer: {
+
+            flex: 1,
+            flexDirection: 'row',
+            backgroundColor: 'white',
+            padding: 10,
+            marginRight: 10,
+            borderRadius: 50,
+            alignItems: 'flex-end',
+        },
+
+        buttonContainer: {
+            justifyContent: 'center',
+            alignItems: 'center',
+
+        },
+
+        sendButton: {
+            marginBottom: 5,
+            marginRight: 5,
+            opacity: '90%',
+
+        },
+
+
+        inputBox: {
+            flex: 1,
+            marginHorizontal: 10,
+
+        },
+
+
+        centeredView: {
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginTop: 22,
+        },
+
+        modalView: {
+            margin: 20,
+            backgroundColor: 'white',
+            borderRadius: 20,
+            padding: 35,
+            alignItems: 'center',
+            shadowColor: '#000',
+            shadowOffset: {
+                width: 0,
+                height: 2,
+            },
+            shadowOpacity: 0.25,
+            shadowRadius: 4,
+            elevation: 5,
+        },
+
+
+
+        button: {
+            borderRadius: 20,
+            padding: 10,
+            elevation: 2,
+        },
+        buttonOpen: {
+            backgroundColor: "#34B7F1",
+        },
+        buttonClose: {
+            backgroundColor: '#2196F3',
+        },
+        textStyle: {
+            color: 'white',
+            fontWeight: 'bold',
+            textAlign: 'center',
+        },
+        modalText: {
+
+            marginTop: 10,
+            fontSize: 16,
+            color: '#34633E',
+            opacity: '90%',
+            fontWeight: 'bold',
+            marginBottom: 15,
+            textAlign: 'center',
+        },
+
+        modalHead: {
+            width: "100%",
+            flexDirection: "row",
+            justifyContent: "space-around",
+            alignItems: "center",
+        },
+
+        modalInput: {
+            borderBottomColor: '#14c83c',
+            borderBottomWidth: 2,
+            padding: 8,
+            margin: 30,
+            marginTop: 10,
+            fontSize: 13,
+            color: '#34633E',
+            fontWeight: 'bold',
+            marginBottom: 20,
+            //textAlign: 'center',
         }
 
 
+
+
+
+
+
     });
-
-
-
 
     async loadSingleChat() {
         const sessionToken = await AsyncStorage.getItem("sessionToken");
@@ -198,12 +316,6 @@ class ChatsScreen extends Component {
                 this.setState({ chatName: data.name })
                 this.setState({ chatOwnerID: data.creator.user_id })
                 this.setState({ chatID: chatID })
-                // this.setState((prevState) => ({
-                //     data: {
-                //         ...prevState.data,
-                //         [chatID]: [],
-                //     },
-                // }));
 
             })
 
@@ -219,142 +331,107 @@ class ChatsScreen extends Component {
     }
 
 
-    // updateChatInfo = async (item) => {
-    //     const sessionToken = await AsyncStorage.getItem("sessionToken");
-    //     // eslint-disable-next-line react/prop-types
-    //     const { id } = this.props.route.params;
+    updateChatInfo = async (chatID) => {
+        const sessionToken = await AsyncStorage.getItem("sessionToken");
+        const name = this.state.newChatName;
 
-    //     let to_send = {};
+        return fetch(`http://localhost:3333/api/1.0.0/chat/${chatID}`, {
 
-    //     if (this.state.firstName != this.state.origFirstName && InputValidator.validName(this.state.firstName)) {
-    //         to_send['first_name'] = this.state.firstName;
-    //     }
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Authorization': sessionToken,
+            },
 
-    //     if (this.state.lastName != this.state.origLastName && InputValidator.validName(this.state.lastName)) {
-    //         to_send['last_name'] = this.state.lastName;
-    //     }
-    //     if (this.state.email != this.state.origEmail && InputValidator.isValidEmail(this.state.email)) {
-    //         to_send['email'] = this.state.email;
-    //     }
-    //     if (this.state.password != this.state.origPassword && InputValidator.isValidPassword(this.state.password)) {
-    //         to_send['password'] = this.state.password;
-    //     }
+            body: JSON.stringify({ name }),
 
-    //     return fetch(`http://localhost:3333/api/1.0.0/chat/${id}`, {
+        })
+            .then((response) => {
+                if (response.status === 200) {
+                    this.loadSingleChat()
+                    this.setState({ newChatName: '' });
+                    this.setState({ errorText: 'Successfully Updated Your Details' })
+                }
 
-    //         method: 'PATCH',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //             'X-Authorization': sessionToken,
-    //         },
+                else if (response.status === 400) {
+                    this.setState({ errorText: 'Try Again' })
+                }
 
-    //         body: JSON.stringify(to_send)
+                else if (response.status === 401) {
+                    this.setState({ errorText: 'Try Again, make sure you are signed in' })
+                }
 
-    //     })
-    //         .then((response) => {
-    //             if (response.status === 200) {
-    //                 this.loadUserInfo()
-    //                 this.setState({ errorText: 'Successfully Updated Your Details' })
-    //             }
+            })
 
-    //             else if (response.status === 400) {
-    //                 this.setState({ errorText: 'Try Again' })
-    //             }
+            .catch((error) => {
+                console.log(error)
 
-    //             else if (response.status === 401) {
-    //                 this.setState({ errorText: 'Try Again, make sure you are signed in' })
-    //             }
-
-    //         })
-
-    //         .catch((error) => {
-    //             console.log(error)
-
-    //         })
+            })
 
 
-    // }
+    }
 
-    // sendMessage = async (chatID) => {
+    sendMessage = async (chatID) => {
 
-    //     const sessionToken = await AsyncStorage.getItem("sessionToken");
-    //     // eslint-disable-next-line react/prop-types
-    //     const { navigation } = this.props;
-    //     const message = this.state.message;
+        const sessionToken = await AsyncStorage.getItem("sessionToken");
+        // eslint-disable-next-line react/prop-types
+        const { navigation } = this.props;
+        const message = this.state.message;
 
-    //     return fetch(`http://localhost:3333/api/1.0.0/chat/${chatID}/message`, {
+        return fetch(`http://localhost:3333/api/1.0.0/chat/${chatID}/message`, {
 
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //             'X-Authorization': sessionToken,
-    //         },
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Authorization': sessionToken,
+            },
 
-    //         body: JSON.stringify({ message })
+            body: JSON.stringify({ message })
 
-    //     })
-    //         .then((response) => {
-    //             if (response.status == 200) {
-    //                 this.loadSingleChat();
-    //             }
-    //             else if (response.status == 400) {
-    //                 this.setState({ errorText: "Something went wrong, Try Again" })
-    //             }
+        })
+            .then((response) => {
+                if (response.status == 200) {
+                    this.loadSingleChat();
+                    this.setState({ message: '' });
+                }
+                else if (response.status == 400) {
+                    this.setState({ errorText: "Something went wrong, Try Again" })
+                }
 
-    //             else if (response.status == 401) {
-    //                 this.setState({ errorText: "You can't make this request" })
-    //             }
+                else if (response.status == 401) {
+                    this.setState({ errorText: "You can't make this request" })
+                }
 
-    //             else if (response.status == 403) {
-    //                 this.setState({ errorText: "You can't send this message, Try Again" })
-    //             }
+                else if (response.status == 403) {
+                    this.setState({ errorText: "You can't send this message, Try Again" })
+                }
 
-    //             else if (response.status == 404) {
-    //                 this.setState({ errorText: "Not Found" })
-    //             }
+                else if (response.status == 404) {
+                    this.setState({ errorText: "Not Found" })
+                }
 
-    //             else if (response.status == 500) {
-    //                 this.setState({ errorText: "Try Again" })
-    //             }
+                else if (response.status == 500) {
+                    this.setState({ errorText: "Try Again" })
+                }
 
-    //         })
+            })
 
-    //         .catch((error) => {
-    //             console.log(error)
-    //         })
-
-
-    // }
+            .catch((error) => {
+                console.log(error)
+            })
 
 
-
-
-
-
-
+    }
 
     componentDidMount() {
         // eslint-disable-next-line react/prop-types
         this.unsubscribe = this.props.navigation.addListener('focus', () => {
             this.loadSingleChat();
-
+            this.setState({ isLoading: false })
         });
 
 
-        this.setState({
-            messages: [
-                {
-                    _id: 1,
-                    text: 'Hello developer',
-                    createdAt: new Date(),
-                    user: {
-                        _id: 2,
-                        name: 'React Native',
-                        avatar: 'https://placeimg.com/140/140/any',
-                    },
-                },
-            ],
-        });
+
     }
 
     componentWillUnmount() {
@@ -362,18 +439,7 @@ class ChatsScreen extends Component {
     }
 
 
-    onSend(messages = []) {
 
-
-
-
-        // this.setState(previousState => ({
-        //     messages: GiftedChat.append(previousState.messages, messages),
-        // }));
-
-
-
-    }
 
     chatRoomItemComponent = ({ item }) => {
         // eslint-disable-next-line react/prop-types
@@ -417,7 +483,12 @@ class ChatsScreen extends Component {
 
     }
 
+    updateChatRoomName = () => {
+        this.setState(({ updateChatName }) => ({ updateChatName: !updateChatName }));
+        this.setState({ message: " " });
 
+
+    }
 
 
 
@@ -428,91 +499,163 @@ class ChatsScreen extends Component {
         // eslint-disable-next-line react/prop-types
         const navigation = this.props.navigation;
 
+        if (this.state.isLoading) {
+            return (<View>
+                <ActivityIndicator size="large" />
+            </View>)
+
+        }
+
+        else {
+            return (
 
 
-        return (
+                <>
+
+
+                    <View style={this.styles.headerBar} >
 
 
 
-            <>
+                        <TouchableOpacity
+                            // eslint-disable-next-line react/prop-types
+                            onPress={() => { navigation.navigate('Messages') }} >
+                            <Ionicons name="chevron-back" size={33} />
+
+                        </TouchableOpacity>
+
+                        <View>
+                            <Text style={GeneralStyles.chatHeaderText}>
+                                {this.state.chatName}
+                            </Text>
+                        </View>
 
 
-                <View style={this.styles.headerBar} >
+                        <View style={this.styles.toggleIcons}>
 
-                    <TouchableOpacity
-                        // eslint-disable-next-line react/prop-types
-                        onPress={() => { navigation.navigate('Messages') }} >
-                        <Ionicons name="chevron-back" size={33} />
+                            <View style={GeneralStyles.iconSpacing}>
+                                <TouchableOpacity onPress={() => {
+                                    { this.setState({ updateChatName: true }) };
+                                }}>
+                                    <FontAwesome name="pencil-square-o" size={25} color="FC0000" />
+                                </TouchableOpacity>
 
-                    </TouchableOpacity>
+                            </View>
 
-                    <View>
-                        <Text style={GeneralStyles.chatHeaderText}>
-                            {this.state.chatName}
-                        </Text>
+                            <View style={GeneralStyles.iconSpacing}>
+                                <TouchableOpacity >
+                                    <Ionicons name="md-person-add" size={25} color="#34B7F1" />
+                                </TouchableOpacity>
+
+                            </View>
+
+
+
+                        </View>
+                    </View>
+
+                    <View style={this.styles.centeredView}>
+                        <Modal transparent={true} animationType="fade" isVisible={this.state.updateChatName}
+                            onRequestClose={this.updateChatRoomName}>
+
+
+                            <View style={this.styles.centeredView}>
+                                <View style={this.styles.modalView}>
+
+                                    <View style={{ alignItems: 'center' }}>
+                                        <View style={this.styles.modalHead}>
+                                            <Text style={GeneralStyles.chatHeaderText}>Update Chat Name</Text>
+                                            <TouchableOpacity
+                                                onPress={() => this.updateChatRoomName()}>
+                                                <Ionicons name="md-close-sharp" size={25} color="#CC0000" />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+
+                                    <TextInput
+                                        placeholder="Enter New Name"
+                                        placeholderTextColor={'grey'}
+                                        value={this.state.newChatName}
+                                        onChangeText={newChatName => this.setState({ newChatName })}
+                                        style={this.styles.modalInput}
+
+                                    />
+
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            { this.updateChatInfo(this.state.chatID) };
+
+                                        }}>
+
+                                        {this.state.newChatName ?
+
+                                            (<View style={[this.styles.button, this.styles.buttonOpen]}>
+                                                <Text style={this.styles.textStyle}> Update </Text>
+                                            </View>) : (<> </>)}
+
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
+                        </Modal>
+                    </View>
+
+
+                    <FlatList
+
+                        data={this.state.chatMessages.messages}
+                        renderItem={this.chatRoomItemComponent}
+                        inverted
+
+                    />
+
+                    <View style={this.styles.sendBoxContainer}>
+                        <View style={this.styles.sendBoxMainContainer}>
+                            <TextInput placeholder={'Type a message'}
+                                style={this.styles.inputBox}
+                                value={this.state.message}
+                                onChangeText={message => this.setState({ message })}
+                                multiline
+
+                            />
+
+                        </View>
+
+                        <TouchableOpacity onPress={() => {
+                            { this.sendMessage(this.state.chatID) };
+
+                        }}>
+                            <View style={this.styles.buttonContainer}>
+                                {this.state.message ? (
+                                    <MaterialCommunityIcons name='send-circle' size={40} style={this.styles.sendButton} color={'#34B7F1'} />
+
+                                ) :
+                                    (<> </>)}
+
+                            </View>
+                        </TouchableOpacity>
+
+
+
+
                     </View>
 
 
 
-                </View>
 
 
-                <View style={this.styles.headerIconsBar}>
-                    <View style={this.styles.toggleIcons}>
-
-                        <View style={{ margin: 20 }}>
-                            <TouchableOpacity>
-                                <FontAwesome name="pencil-square-o" size={25} color="FC0000" />
-                            </TouchableOpacity>
-
-                        </View>
-
-                        <View style={{ margin: 20 }}>
-                            <TouchableOpacity>
-                                <Ionicons name="md-person-add" size={25} color="#36942B" />
-                            </TouchableOpacity>
-
-                        </View>
-
-
-
-                    </View>
-
-                </View>
+                </>
 
 
 
 
 
-                <FlatList
-
-                    data={this.state.chatMessages.messages}
-                    renderItem={this.chatRoomItemComponent}
-                    inverted
-
-                />
+            );
 
 
 
+        }
 
-
-
-
-
-
-
-
-
-
-
-
-            </>
-
-
-
-
-
-        );
 
 
 
