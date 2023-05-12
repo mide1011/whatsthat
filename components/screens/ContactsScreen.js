@@ -27,6 +27,7 @@ class ContactsScreen extends Component {
             modalVisible: true,
             isLoading: true,
             currentUser: null,
+            checkContact: false,
 
         };
 
@@ -395,18 +396,21 @@ class ContactsScreen extends Component {
     contactItemComponent = ({ item }) => {
         return (
             <View style={GeneralStyles.contactsWrapper} key={item.user_id}>
-                <Text style={GeneralStyles.searchText}>
-                    {item.first_name + " " + item.last_name}
+
+                
+                <Text style={GeneralStyles.infoText}>
+                    {item.user_id +  " " + item.first_name + " " + item.last_name}
                 </Text>
 
                 <View style={GeneralStyles.iconSpacing}>
 
-                    <View style={{ margin: 20 }}>
+                    <View style={{ margin: 10 }}>
                         <TouchableOpacity onPress={() => { this.removeContact(item) }}>
                             <Ionicons name="person-remove" size={30} color="FC0000" />
                         </TouchableOpacity>
 
                     </View>
+
 
                     <View>
                         <TouchableOpacity onPress={() => this.blockContact(item)}>
@@ -416,6 +420,8 @@ class ContactsScreen extends Component {
                     </View>
                 </View>
             </View>
+
+
 
         )
     }
@@ -437,6 +443,15 @@ class ContactsScreen extends Component {
 
     componentWillUnmount() {
         this.unsubscribe();
+    }
+
+
+
+    checkContactDetail = () => {
+        this.setState(({ checkContact }) => ({ checkContact: !checkContact }));
+
+
+
     }
 
 

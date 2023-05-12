@@ -83,8 +83,8 @@ export default StyleSheet.create({
     fontSize: 14,
   },
 
-  
-  sendInput:{
+
+  sendInput: {
 
   },
 
@@ -117,16 +117,16 @@ export default StyleSheet.create({
   },
 
 
-  chatInfoText:
+
+  infoText:
   {
 
     padding: 5,
     color: 'black',
-    marginBottom: 65,
     fontSize: 15,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginLeft: 40,
+    margin: 5,
 
 
   },
@@ -192,7 +192,7 @@ export default StyleSheet.create({
     justifyContent: 'space-between',
     padding: 10,
 
-    
+
   },
 
   leftContainer: {
@@ -207,14 +207,14 @@ export default StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 50,
-    marginRight:10,
+    marginRight: 10,
   },
 
 
   contactsWrapper: {
 
     marginTop: 12,
-    padding: 8,
+    padding: 10,
     backgroundColor: colors.mainTheme,
     width: '100%',
     height: 55,

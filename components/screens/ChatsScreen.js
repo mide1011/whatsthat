@@ -28,7 +28,11 @@ class ChatsScreen extends Component {
             isLoading: true,
             currentUserID: '',
             updateChatName: false,
+            isUserAdded: false,
+            viewMembers: false,
             newChatName: '',
+            newUserToAddID: '',
+
 
 
 
@@ -423,6 +427,112 @@ class ChatsScreen extends Component {
 
     }
 
+
+
+    addUserToChat = async (chatID) => {
+
+        const sessionToken = await AsyncStorage.getItem("sessionToken");
+        // eslint-disable-next-line react/prop-types
+        const { navigation } = this.props;
+        const userToAddID = this.state.newUserToAddID;
+
+        return fetch(`http://localhost:3333/api/1.0.0/chat/${chatID}/user/${userToAddID}`, {
+
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Authorization': sessionToken,
+            },
+
+        })
+            .then((response) => {
+                if (response.status == 200) {
+                    this.loadSingleChat();
+                    this.setState({ newUserToAddID: '' });
+                }
+                else if (response.status == 400) {
+                    this.setState({ errorText: "Something went wrong, Try Again" })
+                }
+
+                else if (response.status == 401) {
+                    this.setState({ errorText: "You can't make this request" })
+                }
+
+                else if (response.status == 403) {
+                    this.setState({ errorText: "You can't send this message, Try Again" })
+                }
+
+                else if (response.status == 404) {
+                    this.setState({ errorText: "Not Found" })
+                }
+
+                else if (response.status == 500) {
+                    this.setState({ errorText: "Try Again" })
+                }
+
+            })
+
+            .catch((error) => {
+                console.log(error)
+            })
+
+
+    }
+
+
+    removeFromChat = async (item,chatID) => {
+
+        const sessionToken = await AsyncStorage.getItem("sessionToken");
+        const userToRemove = item.user_id;
+
+        return fetch(`http://localhost:3333/api/1.0.0/chat/${chatID}/user/${userToRemove}`, {
+
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Authorization': sessionToken,
+            },
+
+        })
+            .then((response) => {
+                if (response.status == 200) {
+                    this.loadSingleChat();
+                }
+                else if (response.status == 400) {
+                    this.setState({ errorText: "Something went wrong, Try Again" })
+                }
+
+                else if (response.status == 401) {
+                    this.setState({ errorText: "You can't make this request" })
+                }
+
+                else if (response.status == 403) {
+                    this.setState({ errorText: "You can't send this message, Try Again" })
+                }
+
+                else if (response.status == 404) {
+                    this.setState({ errorText: "Not Found" })
+                }
+
+                else if (response.status == 500) {
+                    this.setState({ errorText: "Try Again" })
+                }
+
+            })
+
+            .catch((error) => {
+                console.log(error)
+            })
+
+
+    }
+
+
+
+
+
+
+
     componentDidMount() {
         // eslint-disable-next-line react/prop-types
         this.unsubscribe = this.props.navigation.addListener('focus', () => {
@@ -437,6 +547,9 @@ class ChatsScreen extends Component {
     componentWillUnmount() {
         this.unsubscribe();
     }
+
+
+    
 
 
 
@@ -483,12 +596,82 @@ class ChatsScreen extends Component {
 
     }
 
+
+    membersItemComponent = ({ item }) => {
+        const userID = String(item.user_id);
+        const currentUser = this.state.currentUserID;
+
+
+        return (
+            <View style={GeneralStyles.contactsWrapper} key={item.user_id}>
+
+
+                <Text style={GeneralStyles.infoText}>
+                    {item.first_name + " " + item.last_name}
+                </Text>
+
+                <View style={GeneralStyles.iconSpacing}>
+
+                    <View style={{ margin: 10 }}>
+
+                        {!ChatHelper.isMyMessage(userID, currentUser) ? (<TouchableOpacity onPress={() => { this.removeFromChat(item,this.state.chatID) }}>
+                            <Ionicons name="person-remove" size={30} color="FC0000" />
+                        </TouchableOpacity>) 
+                        
+                        : (<TouchableOpacity>
+                            <Ionicons name="person-outline" size={30} color="grey" />
+                        </TouchableOpacity>)
+
+                        }
+
+
+                    </View>
+
+                </View>
+            </View>
+
+
+
+        )
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     updateChatRoomName = () => {
         this.setState(({ updateChatName }) => ({ updateChatName: !updateChatName }));
-        this.setState({ message: " " });
+
 
 
     }
+
+
+    addUserToChatRoom = () => {
+        this.setState(({ isUserAdded }) => ({ isUserAdded: !isUserAdded }));
+
+
+
+    }
+
+    viewMembers = () => {
+        this.setState(({ viewMembers }) => ({ viewMembers: !viewMembers }));
+
+    }
+
 
 
 
@@ -543,8 +726,21 @@ class ChatsScreen extends Component {
                             </View>
 
                             <View style={GeneralStyles.iconSpacing}>
-                                <TouchableOpacity >
+                                <TouchableOpacity onPress={() => {
+                                    { this.setState({ isUserAdded: true }) };
+                                }}>
                                     <Ionicons name="md-person-add" size={25} color="#34B7F1" />
+                                </TouchableOpacity>
+
+                            </View>
+
+
+
+                            <View style={GeneralStyles.iconSpacing}>
+                                <TouchableOpacity onPress={() => {
+                                    { this.setState({ viewMembers: true }) };
+                                }}>
+                                    <Ionicons name="ios-happy-sharp" size={25} color="orange" />
                                 </TouchableOpacity>
 
                             </View>
@@ -564,7 +760,7 @@ class ChatsScreen extends Component {
 
                                     <View style={{ alignItems: 'center' }}>
                                         <View style={this.styles.modalHead}>
-                                            <Text style={GeneralStyles.chatHeaderText}>Update Chat Name</Text>
+                                            <Text style={GeneralStyles.chatHeaderText}>Chat Name</Text>
                                             <TouchableOpacity
                                                 onPress={() => this.updateChatRoomName()}>
                                                 <Ionicons name="md-close-sharp" size={25} color="#CC0000" />
@@ -573,7 +769,7 @@ class ChatsScreen extends Component {
                                     </View>
 
                                     <TextInput
-                                        placeholder="Enter New Name"
+                                        placeholder="Enter New Chat Name"
                                         placeholderTextColor={'grey'}
                                         value={this.state.newChatName}
                                         onChangeText={newChatName => this.setState({ newChatName })}
@@ -599,6 +795,98 @@ class ChatsScreen extends Component {
 
                         </Modal>
                     </View>
+
+
+
+                    <View style={this.styles.centeredView}>
+                        <Modal transparent={true} animationType="fade" isVisible={this.state.isUserAdded}
+                            onRequestClose={this.addUserToChatRoom}>
+
+
+                            <View style={this.styles.centeredView}>
+                                <View style={this.styles.modalView}>
+
+                                    <View style={{ alignItems: 'center' }}>
+                                        <View style={this.styles.modalHead}>
+                                            <Text style={GeneralStyles.chatHeaderText}>Add To Chat</Text>
+                                            <TouchableOpacity
+                                                onPress={() => this.addUserToChatRoom()}>
+                                                <Ionicons name="md-close-sharp" size={25} color="#CC0000" />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+
+                                    <TextInput
+                                        placeholder="Enter Their ID"
+                                        placeholderTextColor={'grey'}
+                                        value={this.state.newUserToAddID}
+                                        onChangeText={newUserToAddID => this.setState({ newUserToAddID })}
+                                        style={this.styles.modalInput}
+
+                                    />
+
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            { this.addUserToChat(this.state.chatID) };
+
+                                        }}>
+
+                                        {this.state.newUserToAddID ?
+
+                                            (<View style={[this.styles.button, this.styles.buttonOpen]}>
+                                                <Text style={this.styles.textStyle}> Update </Text>
+                                            </View>) : (<> </>)}
+
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
+                        </Modal>
+                    </View>
+
+
+
+                    <View style={this.styles.centeredView}>
+                        <Modal transparent={true} animationType="fade" isVisible={this.state.viewMembers}
+                            onRequestClose={this.viewMembers}>
+
+
+                            <View style={this.styles.centeredView}>
+                                <View style={this.styles.modalView}>
+
+                                    <View style={{ alignItems: 'center' }}>
+                                        <View style={this.styles.modalHead}>
+                                            <Text style={GeneralStyles.chatHeaderText}>Members</Text>
+                                            <TouchableOpacity
+                                                onPress={() => this.viewMembers()}>
+                                                <Ionicons name="md-close-sharp" size={25} color="#CC0000" />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+
+
+                                    <FlatList
+                                        data={this.state.chatMessages.members}
+                                        renderItem={this.membersItemComponent}
+
+                                    />
+
+
+
+
+
+
+
+                                </View>
+                            </View>
+
+                        </Modal>
+                    </View>
+
+
+
+
+
 
 
                     <FlatList
