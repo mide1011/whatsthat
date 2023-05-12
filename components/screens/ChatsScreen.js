@@ -4,7 +4,7 @@ import { TouchableOpacity } from 'react-native-web';
 import colors from '../../assets/colors/colors';
 import GeneralStyles from '../../styles/GeneralStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
+import { FontAwesome, Ionicons, EvilIcons,MaterialCommunityIcons } from '@expo/vector-icons'
 import Modal from "react-native-modal";
 import InputValidator from '../../helpers/InputValidator';
 import Moment from 'moment';
@@ -30,8 +30,13 @@ class ChatsScreen extends Component {
             updateChatName: false,
             isUserAdded: false,
             viewMembers: false,
+            editMessage: false,
             newChatName: '',
             newUserToAddID: '',
+            messageToEditID: '',
+            origMessage: '',
+            newMessage: '',
+            messageAuthorID: '',
 
 
 
@@ -266,7 +271,6 @@ class ChatsScreen extends Component {
             color: '#34633E',
             fontWeight: 'bold',
             marginBottom: 20,
-            //textAlign: 'center',
         }
 
 
@@ -480,7 +484,7 @@ class ChatsScreen extends Component {
     }
 
 
-    removeFromChat = async (item,chatID) => {
+    removeFromUserChat = async (item, chatID) => {
 
         const sessionToken = await AsyncStorage.getItem("sessionToken");
         const userToRemove = item.user_id;
@@ -527,6 +531,95 @@ class ChatsScreen extends Component {
 
     }
 
+    deleteMessageFromChat = async (messageToDelete, chatID) => {
+
+        const sessionToken = await AsyncStorage.getItem("sessionToken");
+
+        return fetch(`http://localhost:3333/api/1.0.0/chat/${chatID}/message/${messageToDelete}`, {
+
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Authorization': sessionToken,
+            },
+
+        })
+            .then((response) => {
+                if (response.status == 200) {
+                    this.loadSingleChat();
+                }
+                else if (response.status == 400) {
+                    this.setState({ errorText: "Something went wrong, Try Again" })
+                }
+
+                else if (response.status == 401) {
+                    this.setState({ errorText: "You can't make this request" })
+                }
+
+                else if (response.status == 403) {
+                    this.setState({ errorText: "You can't send this message, Try Again" })
+                }
+
+                else if (response.status == 404) {
+                    this.setState({ errorText: "Not Found" })
+                }
+
+                else if (response.status == 500) {
+                    this.setState({ errorText: "Try Again" })
+                }
+
+            })
+
+            .catch((error) => {
+                console.log(error)
+            })
+
+
+    }
+
+
+
+    editMessage = async (chatID,messageID) => {
+        const sessionToken = await AsyncStorage.getItem("sessionToken");
+        const message = this.state.newMessage;
+
+        return fetch(`http://localhost:3333/api/1.0.0/chat/${chatID}/message/${messageID}`, {
+
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Authorization': sessionToken,
+            },
+
+            body: JSON.stringify({ message }),
+
+        })
+            .then((response) => {
+                if (response.status === 200) {
+                    this.loadSingleChat()
+                    this.setState({ newMessage: '' });
+                    this.setState({ errorText: 'Successfully Updated Your Details' })
+                }
+
+                else if (response.status === 400) {
+                    this.setState({ errorText: 'Try Again' })
+                }
+
+                else if (response.status === 401) {
+                    this.setState({ errorText: 'Try Again, make sure you are signed in' })
+                }
+
+            })
+
+            .catch((error) => {
+                console.log(error)
+
+            })
+
+
+    }
+
+
 
 
 
@@ -549,9 +642,6 @@ class ChatsScreen extends Component {
     }
 
 
-    
-
-
 
 
     chatRoomItemComponent = ({ item }) => {
@@ -564,30 +654,42 @@ class ChatsScreen extends Component {
         return (
             <View style={this.styles.chatBoxContainer}>
 
-                <View style={[this.styles.chatBox,
-                {
-                    backgroundColor: ChatHelper.isMyMessage(userID, currentUser) ? colors.chatsBackgroundColor : '#d4d4d4',
-                    marginLeft: ChatHelper.isMyMessage(userID, currentUser) ? 45 : 0,
-                    marginRight: ChatHelper.isMyMessage(userID, currentUser) ? 0 : 45,
+                <TouchableOpacity onPress={() => {
+                    this.handleEditedMessage(item)
+                }}>
+                    <View style={[this.styles.chatBox,
+                    {
+                        backgroundColor: ChatHelper.isMyMessage(userID, currentUser) ? colors.chatsBackgroundColor : '#d4d4d4',
+                        marginLeft: ChatHelper.isMyMessage(userID, currentUser) ? 45 : 0,
+                        marginRight: ChatHelper.isMyMessage(userID, currentUser) ? 0 : 45,
 
-                }
-                ]}>
+                    }
+                    ]}>
 
-                    {!ChatHelper.isMyMessage(userID, currentUser) && <Text style={this.styles.name}>
-                        {item.author.first_name}
-                    </Text>}
+                        {!ChatHelper.isMyMessage(userID, currentUser) && <Text style={this.styles.name}>
+                            {item.author.first_name}
+                        </Text>}
 
-                    <Text style={this.styles.message}>
-                        {item.message}
-                    </Text>
+                        <Text style={this.styles.message}>
+                            {item.message}
+                        </Text>
 
-                    <Text style={this.styles.time}>
-                        {(Moment(item.timestamp).fromNow())}
-                    </Text>
+                        <Text style={this.styles.time}>
+                            {(Moment(item.timestamp).fromNow())}
+                        </Text>
 
-                </View>
+                    </View>
+
+                </TouchableOpacity>
+
+
+
+
 
             </View>
+
+
+
 
 
 
@@ -614,13 +716,13 @@ class ChatsScreen extends Component {
 
                     <View style={{ margin: 10 }}>
 
-                        {!ChatHelper.isMyMessage(userID, currentUser) ? (<TouchableOpacity onPress={() => { this.removeFromChat(item,this.state.chatID) }}>
+                        {!ChatHelper.isMyMessage(userID, currentUser) ? (<TouchableOpacity onPress={() => { this.removeFromUserChat(item, this.state.chatID) }}>
                             <Ionicons name="person-remove" size={30} color="FC0000" />
-                        </TouchableOpacity>) 
-                        
-                        : (<TouchableOpacity>
-                            <Ionicons name="person-outline" size={30} color="grey" />
                         </TouchableOpacity>)
+
+                            : (<TouchableOpacity>
+                                <Ionicons name="person-outline" size={30} color="grey" />
+                            </TouchableOpacity>)
 
                         }
 
@@ -628,28 +730,20 @@ class ChatsScreen extends Component {
                     </View>
 
                 </View>
+
+
             </View>
+
+
+
+
+
 
 
 
         )
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     updateChatRoomName = () => {
@@ -673,12 +767,34 @@ class ChatsScreen extends Component {
     }
 
 
+    handleEditedChat = () => {
+
+        this.setState(({ editMessage }) => ({ editMessage: !editMessage }));
+    }
+
+    handleEditedMessage = (item) => {
+        this.setState({ editMessage: true })
+        this.setState({ messageToEditID: item.message_id })
+        this.setState({ origMessage: item.message })
+        this.setState({ messageAuthorID: item.author.user_id })
+
+
+
+
+
+    }
+
+    handleDeleteMessage = () => {
+        this.handleEditedChat();
+       this.deleteMessageFromChat(this.state.messageToEditID,this.state.chatID)
+
+    }
+
 
 
 
     render() {
 
-        // const { modalVisible } = this.state;
         // eslint-disable-next-line react/prop-types
         const navigation = this.props.navigation;
 
@@ -774,6 +890,7 @@ class ChatsScreen extends Component {
                                         value={this.state.newChatName}
                                         onChangeText={newChatName => this.setState({ newChatName })}
                                         style={this.styles.modalInput}
+                                        multiline
 
                                     />
 
@@ -822,6 +939,7 @@ class ChatsScreen extends Component {
                                         value={this.state.newUserToAddID}
                                         onChangeText={newUserToAddID => this.setState({ newUserToAddID })}
                                         style={this.styles.modalInput}
+                                        
 
                                     />
 
@@ -868,13 +986,70 @@ class ChatsScreen extends Component {
                                     <FlatList
                                         data={this.state.chatMessages.members}
                                         renderItem={this.membersItemComponent}
+                                        keyExtractor={(item) => item.user_id}
 
                                     />
 
 
+                                </View>
+                            </View>
+
+                        </Modal>
+                    </View>
 
 
 
+
+                    <View style={this.styles.centeredView}>
+                        <Modal transparent={true} animationType="fade" isVisible={this.state.editMessage}
+                            onRequestClose={this.handleEditedChat}>
+
+
+                            <View style={this.styles.centeredView}>
+                                <View style={this.styles.modalView}>
+
+                                    <View style={{ alignItems: 'center' }}>
+                                        <View style={this.styles.modalHead}>
+                                            <Text style={GeneralStyles.chatHeaderText}>Edit Message</Text>
+                                            <TouchableOpacity
+                                                onPress={() => this.handleEditedChat()}>
+                                                <Ionicons name="md-close-sharp" size={25} color="#CC0000" />
+                                            </TouchableOpacity>
+
+                                            <TouchableOpacity
+                                                onPress={() => this.handleDeleteMessage()}>
+                                                <EvilIcons name="trash" size={25} color="grey" />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+
+
+                                    <TextInput
+                                        placeholder="Enter Message"
+                                        placeholderTextColor={'grey'}
+                                        defaultValue={this.state.origMessage}
+                                        onChangeText={newMessage => this.setState({ newMessage })}
+                                        style={this.styles.modalInput}
+                                        multiline
+
+
+
+                                    />
+
+
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            { this.editMessage(this.state.chatID,this.state.messageToEditID) };
+
+                                        }}>
+
+                                        {this.state.newMessage ?
+
+                                            (<View style={[this.styles.button, this.styles.buttonOpen]}>
+                                                <Text style={this.styles.textStyle}> Update </Text>
+                                            </View>) : (<> </>)}
+
+                                    </TouchableOpacity>
 
 
                                 </View>
@@ -893,6 +1068,7 @@ class ChatsScreen extends Component {
 
                         data={this.state.chatMessages.messages}
                         renderItem={this.chatRoomItemComponent}
+                        keyExtractor={(item) => item.message_id}
                         inverted
 
                     />
@@ -943,12 +1119,6 @@ class ChatsScreen extends Component {
 
 
         }
-
-
-
-
-
-
 
 
 

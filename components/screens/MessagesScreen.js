@@ -290,12 +290,6 @@ class MessagesScreen extends Component {
                                 keyExtractor={(item) => item.chat_id}
                             />
 
-
-
-
-
-
-
                         </ScrollView>
 
                     </SafeAreaView>
