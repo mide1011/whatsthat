@@ -4,7 +4,7 @@ import { TouchableOpacity } from 'react-native-web';
 import colors from '../../assets/colors/colors';
 import GeneralStyles from '../../styles/GeneralStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FontAwesome, Ionicons, EvilIcons,MaterialCommunityIcons } from '@expo/vector-icons'
+import { FontAwesome, Ionicons, EvilIcons, MaterialCommunityIcons } from '@expo/vector-icons'
 import Modal from "react-native-modal";
 import InputValidator from '../../helpers/InputValidator';
 import Moment from 'moment';
@@ -31,6 +31,7 @@ class ChatsScreen extends Component {
             isUserAdded: false,
             viewMembers: false,
             editMessage: false,
+
             newChatName: '',
             newUserToAddID: '',
             messageToEditID: '',
@@ -147,7 +148,7 @@ class ChatsScreen extends Component {
         },
 
         message: {
-            //marginVertical: 5,
+            marginVertical: 5,
         },
 
         time: {
@@ -288,8 +289,10 @@ class ChatsScreen extends Component {
         // eslint-disable-next-line react/prop-types
         const { chatID } = this.props.route.params;
         const userID = await AsyncStorage.getItem("userID");
+        const limit = 20;
+        const offset = 0;
 
-        return fetch(`http://localhost:3333/api/1.0.0/chat/${chatID}`, {
+        return fetch(`http://localhost:3333/api/1.0.0/chat/${chatID}?limit=${limit}&offset=${offset}`, {
 
             method: 'GET',
             headers: {
@@ -579,7 +582,7 @@ class ChatsScreen extends Component {
 
 
 
-    editMessage = async (chatID,messageID) => {
+    editMessage = async (chatID, messageID) => {
         const sessionToken = await AsyncStorage.getItem("sessionToken");
         const message = this.state.newMessage;
 
@@ -627,18 +630,25 @@ class ChatsScreen extends Component {
 
 
     componentDidMount() {
+
+        this.loadSingleChat();
         // eslint-disable-next-line react/prop-types
         this.unsubscribe = this.props.navigation.addListener('focus', () => {
             this.loadSingleChat();
             this.setState({ isLoading: false })
+
         });
 
+        this.interval = setInterval(() => {
+            this.loadSingleChat();
+        }, 3000);
 
 
     }
 
     componentWillUnmount() {
         this.unsubscribe();
+
     }
 
 
@@ -655,7 +665,7 @@ class ChatsScreen extends Component {
             <View style={this.styles.chatBoxContainer}>
 
                 <TouchableOpacity onPress={() => {
-                    this.handleEditedMessage(item)
+                    ChatHelper.isMyMessage(userID, currentUser) ? this.handleEditedMessage(item) : <></>
                 }}>
                     <View style={[this.styles.chatBox,
                     {
@@ -681,8 +691,6 @@ class ChatsScreen extends Component {
                     </View>
 
                 </TouchableOpacity>
-
-
 
 
 
@@ -754,6 +762,14 @@ class ChatsScreen extends Component {
     }
 
 
+    modalState = () => {
+        this.setState(({ modalState }) => ({ modalState: !modalState }));
+
+
+
+    }
+
+
     addUserToChatRoom = () => {
         this.setState(({ isUserAdded }) => ({ isUserAdded: !isUserAdded }));
 
@@ -786,9 +802,11 @@ class ChatsScreen extends Component {
 
     handleDeleteMessage = () => {
         this.handleEditedChat();
-       this.deleteMessageFromChat(this.state.messageToEditID,this.state.chatID)
+        this.deleteMessageFromChat(this.state.messageToEditID, this.state.chatID)
 
     }
+
+
 
 
 
@@ -806,7 +824,16 @@ class ChatsScreen extends Component {
         }
 
         else {
+
+
+
+
+
+
+
             return (
+
+
 
 
                 <>
@@ -939,7 +966,7 @@ class ChatsScreen extends Component {
                                         value={this.state.newUserToAddID}
                                         onChangeText={newUserToAddID => this.setState({ newUserToAddID })}
                                         style={this.styles.modalInput}
-                                        
+
 
                                     />
 
@@ -965,6 +992,8 @@ class ChatsScreen extends Component {
 
 
                     <View style={this.styles.centeredView}>
+
+
                         <Modal transparent={true} animationType="fade" isVisible={this.state.viewMembers}
                             onRequestClose={this.viewMembers}>
 
@@ -1039,7 +1068,7 @@ class ChatsScreen extends Component {
 
                                     <TouchableOpacity
                                         onPress={() => {
-                                            { this.editMessage(this.state.chatID,this.state.messageToEditID) };
+                                            { this.editMessage(this.state.chatID, this.state.messageToEditID) };
 
                                         }}>
 
@@ -1119,6 +1148,11 @@ class ChatsScreen extends Component {
 
 
         }
+
+
+
+
+
 
 
 

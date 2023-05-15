@@ -10,7 +10,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import InputValidator from '../../helpers/InputValidator';
 import Modal from "react-native-modal";
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-
+import PropTypes from 'prop-types';
+import * as ImagePicker from 'expo-image-picker';
 class ProfileScreen extends Component {
 
     constructor(props) {
@@ -34,11 +35,22 @@ class ProfileScreen extends Component {
             invalidName: false,
 
 
+
             isSecureEntry: true,
+            image: 'null',
 
         }
 
     }
+
+
+
+    static get propTypes() { 
+        return { 
+            navigation: PropTypes.object.isRequired,
+        }; 
+    }
+
 
     styles = StyleSheet.create({
         container: {
@@ -99,7 +111,7 @@ class ProfileScreen extends Component {
         this.setState({ isSecureEntry: !this.state.isSecureEntry })
     }
 
-   
+
     async updateUserInfo() {
         const sessionToken = await AsyncStorage.getItem("sessionToken");
         const userID = await AsyncStorage.getItem("userID");
@@ -157,6 +169,7 @@ class ProfileScreen extends Component {
     }
 
 
+
     async loadUserInfo() {
         const sessionToken = await AsyncStorage.getItem("sessionToken");
         const userID = await AsyncStorage.getItem("userID");
@@ -204,10 +217,170 @@ class ProfileScreen extends Component {
     }
 
 
+
+
+    logoutUser = async () => {
+
+        const navigation = this.props.navigation;
+        const sessionToken = await AsyncStorage.getItem("sessionToken");
+      
+
+
+
+
+        return fetch("http://localhost:3333/api/1.0.0/logout", {
+
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Authorization': sessionToken,
+            },
+
+
+
+        })
+
+            .then(async (response) => {
+
+                if (response.status === 200) {
+                    await AsyncStorage.removeItem("sessionToken")
+                    await AsyncStorage.removeItem("userID")
+             
+                    navigation.navigate('Login')
+
+
+                }
+
+                else if (response.status === 401) {
+                    await AsyncStorage.removeItem("sessionToken")
+                    await AsyncStorage.removeItem("userID")
+               
+                    navigation.navigate('Login')
+                }
+
+
+
+                else {
+
+                    throw "Something went wrong"
+
+                }
+
+            })
+
+
+            .catch((error) => {
+                console.log(error)
+
+            })
+
+
+
+    }
+
+
+    handlePfpUpload = async () => {
+        const sessionToken = await AsyncStorage.getItem("sessionToken");
+        const userID = await AsyncStorage.getItem("userID");
+
+
+        await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+            base64: true,
+
+        }).then((image) => {
+
+
+
+            if (!image.canceled) {
+                fetch(`data:image/png;base64, ${image.assets[0].base64}`).then(res => res.blob()).then(blob => {
+
+                    return fetch(`http://localhost:3333/api/1.0.0/user/${userID}/photo`, {
+
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'image/png',
+                            'X-Authorization': sessionToken,
+
+                        },
+        
+                        body: blob,
+
+
+                    })
+
+                }).then((response) => {
+                    if (response.status === 200) {
+                        this.loadUserInfo()
+                        this.getUserProfilePic()
+                        this.setState({ image: `data:image/png;base64, ${image.assets[0].base64}` })
+                    }
+
+                    else if (response.status === 400) {
+                        this.setState({ errorText: 'Try Again' })
+                    }
+
+                    else if (response.status === 401) {
+                        this.setState({ errorText: 'Try Again, make sure you are signed in' })
+                    }
+
+                })
+
+
+            }
+        })
+
+
+       
+
+    }
+
+
+
+
+    async getUserProfilePic() {
+        const sessionToken = await AsyncStorage.getItem("sessionToken");
+        const userID = await AsyncStorage.getItem("userID");
+
+        return fetch(`http://localhost:3333/api/1.0.0/user/${userID}/photo`, {
+
+            method: 'GET',
+            headers: {
+                'Content-Type': 'image/png',
+                'X-Authorization': sessionToken,
+            },
+
+        })
+            .then((image) => {
+                if (image.status === 200) {
+                    return image.blob()
+                }
+
+            })
+
+            .then(async (rawImage) => {
+                this.setState({ image: URL.createObjectURL(rawImage) })
+
+            })
+
+            .catch((error) => {
+                console.log(error)
+
+            })
+
+
+    }
+
+
+
     componentDidMount() {
-        // eslint-disable-next-line react/prop-types
+ 
         this.unsubscribe = this.props.navigation.addListener('focus', () => {
             this.loadUserInfo();
+            this.getUserProfilePic();
         });
     }
 
@@ -216,12 +389,9 @@ class ProfileScreen extends Component {
     }
 
 
-
-
-
     render() {
 
-        // eslint-disable-next-line react/prop-types
+
         const navigation = this.props.navigation;
 
 
@@ -232,13 +402,20 @@ class ProfileScreen extends Component {
 
 
                     <View style={GeneralStyles.headerWrapper}>
+                        <TouchableOpacity onPress={this.handlePfpUpload}>
+                          
 
-                        <Image
-                            source={require('../../assets/images/blankPFP.png')}
-                            style={this.styles.userPFP}
-                        />
+
+                            <Image
+                                source={{ uri: this.state.image }}
+                                style={this.styles.userPFP}
+
+                            />
+
+                        </TouchableOpacity>
+
                         <View style={GeneralStyles.headerContent}>
-                            <Text style={GeneralStyles.headerText}> {this.state.origFirstName} {" "}{this.state.origLastName} </Text>
+                            <Text style={GeneralStyles.headerText}> {this.state.origFirstName} {""}{this.state.origLastName} </Text>
                         </View>
 
                         <View>
@@ -282,11 +459,22 @@ class ProfileScreen extends Component {
                             </TouchableOpacity>
                         </View>
 
-                        <Pressable style={GeneralStyles.signUpButton} onPress={() => { this.updateUserInfo(); }} >
-                            <Text style={GeneralStyles.signUpButtonText}>
-                                Update
-                            </Text>
-                        </Pressable>
+
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Pressable style={GeneralStyles.signUpButton} onPress={() => { this.updateUserInfo(); }} >
+                                <Text style={GeneralStyles.signUpButtonText}>
+                                    Update
+                                </Text>
+                            </Pressable>
+
+                            <Pressable style={GeneralStyles.logoutButton} onPress={() => { this.logoutUser(); }} >
+                                <Text style={GeneralStyles.signUpButtonText}>
+                                    Logout
+                                </Text>
+                            </Pressable>
+                        </View>
+
+
 
 
 

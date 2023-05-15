@@ -42,6 +42,21 @@ export default StyleSheet.create({
 
   },
 
+
+  logoutButton: {
+
+    backgroundColor: '#D80026',
+    borderRadius: 103,
+    height: 48,
+
+    marginHorizontal: 20,
+    marginVertical: 10,
+
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+
+  },
+
   signUpButtonText: {
     fontStyle: 'normal',
     fontSize: 16,

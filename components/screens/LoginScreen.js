@@ -7,8 +7,9 @@ import GeneralStyles from '../../styles/GeneralStyles';
 import userLogin from '../../components/screens/RegisterScreen';
 import * as EmailValidator from 'email-validator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
+import InputValidator from '../../helpers/InputValidator';
+import PropTypes from 'prop-types';
+import React from 'react';
 
 
 class LoginScreen extends Component {
@@ -30,6 +31,12 @@ class LoginScreen extends Component {
             invalidPassword: false,
         }
 
+    }
+
+    static get propTypes() { 
+        return { 
+            navigation: PropTypes.object.isRequired,
+        }; 
     }
 
 
@@ -70,27 +77,27 @@ class LoginScreen extends Component {
 
     });
 
-
+   
 
 
     handleLogin = () => {
 
-        const PASSWORD_REGEX = new RegExp("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$")
-
-
-        if (!EmailValidator.validate(this.state.email)) {
+       
+        if(!InputValidator.isValidEmail(this.state.email)){
             this.setState({ invalidEmail: true })
-            this.setState({ errorText: 'Invalid Email, try again' })
-            return;
+                this.setState({ errorText: 'Invalid Email, try again' })
+                return;
+
         }
 
 
-        else {
+         else {
             this.setState({ invalidEmail: false })
         }
 
 
-        if (!PASSWORD_REGEX.test(this.state.password)) {
+        
+        if (!InputValidator.isValidPassword(this.state.password)) {
             this.setState({ invalidPassword: true })
             this.setState({
                 errorText: "Password must contain: one number, at least one upper" + ' \n' +
@@ -102,6 +109,7 @@ class LoginScreen extends Component {
         else {
             this.setState({ invalidPassword: false })
         }
+
 
 
         this.loginUser()
