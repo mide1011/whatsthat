@@ -17,6 +17,7 @@ class BlockedScreen extends Component {
 
             blocked: [],
             errorText: '',
+            showModal: false,
 
 
         };
@@ -25,10 +26,13 @@ class BlockedScreen extends Component {
 
     }
 
+    makesModalVisible = () => {
+        this.setState({ showModal: true })
 
-
-    
-
+        setTimeout(() => {
+            this.setState({ showModal: false })
+        }, 100);
+    }
 
 
 
@@ -54,10 +58,12 @@ class BlockedScreen extends Component {
 
                 else if (response.status === 401) {
                     this.setState({ errorText: 'Try Again' })
+                    this.setState({ showModal: true })
                 }
 
                 else if (response.status === 500) {
                     this.setState({ errorText: 'Try Again, make sure you are signed in' })
+                    this.setState({ showModal: true })
                 }
 
             })
@@ -97,17 +103,25 @@ class BlockedScreen extends Component {
             .then((response) => {
                 if (response.status == 200) {
                     this.loadBlocked();
+                    this.setState({ errorText: "Sucessfully Unblocked" })
+                    this.setState({ showModal: true })
                 }
                 else if (response.status == 400) {
                     this.setState({ errorText: "You can't Block yourself" })
+                    this.setState({ showModal: true })
+
                 }
 
                 else if (response.status == 401) {
                     this.setState({ errorText: "Try Again" })
+                    this.setState({ showModal: true })
+
                 }
 
                 else if (response.status == 404) {
                     this.setState({ errorText: "Try Again" })
+                    this.setState({ showModal: true })
+
                 }
 
             })
@@ -194,13 +208,47 @@ class BlockedScreen extends Component {
                         </ScrollView>
 
                     </View>
-
-
-
                 </SafeAreaView>
 
 
+                <View style={GeneralStyles.modalCenteredView}>
+                    <Modal transparent={true} animationType="fade" isVisible={this.state.showModal}>
+
+                        <View style={GeneralStyles.modalCenteredView}>
+                            <View style={GeneralStyles.modalView}>
+
+                                <View style={{ alignItems: 'center' }}>
+                                    <View style={GeneralStyles.modalHead}>
+                                        <Text style={GeneralStyles.modalText}>{this.state.errorText} </Text>
+
+                                    </View>
+
+                                    <TouchableOpacity
+                                        onPress={this.makesModalVisible}>
+
+                                        <View style={[GeneralStyles.button, GeneralStyles.buttonOpen]}>
+                                            <Text style={GeneralStyles.textStyle}> Ok </Text>
+                                        </View>
+
+                                    </TouchableOpacity>
+
+
+                                </View>
+
+
+
+
+                            </View>
+                        </View>
+
+                    </Modal>
+                </View>
+
             </View>
+
+
+
+
 
 
         );

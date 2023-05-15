@@ -38,6 +38,9 @@ class ProfileScreen extends Component {
 
             isSecureEntry: true,
             image: 'null',
+            showModal: false,
+
+            errorText: '',
 
         }
 
@@ -45,10 +48,10 @@ class ProfileScreen extends Component {
 
 
 
-    static get propTypes() { 
-        return { 
+    static get propTypes() {
+        return {
             navigation: PropTypes.object.isRequired,
-        }; 
+        };
     }
 
 
@@ -148,14 +151,32 @@ class ProfileScreen extends Component {
                 if (response.status === 200) {
                     this.loadUserInfo()
                     this.setState({ errorText: 'Successfully Updated Your Details' })
+                    this.setState({ showModal: true })
                 }
 
                 else if (response.status === 400) {
                     this.setState({ errorText: 'Try Again' })
+                    this.setState({ showModal: true })
                 }
 
                 else if (response.status === 401) {
                     this.setState({ errorText: 'Try Again, make sure you are signed in' })
+                    this.setState({ showModal: true })
+                }
+
+                else if (response.status === 403) {
+                    this.setState({ errorText: 'Make sure you are signed in' })
+                    this.setState({ showModal: true })
+                }
+
+                else if (response.status === 404) {
+                    this.setState({ errorText: 'Try Again Later' })
+                    this.setState({ showModal: true })
+                }
+
+                else if (response.status === 404) {
+                    this.setState({ errorText: 'Try Again Later, Something' })
+                    this.setState({ showModal: true })
                 }
 
             })
@@ -223,7 +244,7 @@ class ProfileScreen extends Component {
 
         const navigation = this.props.navigation;
         const sessionToken = await AsyncStorage.getItem("sessionToken");
-      
+
 
 
 
@@ -236,8 +257,6 @@ class ProfileScreen extends Component {
                 'X-Authorization': sessionToken,
             },
 
-
-
         })
 
             .then(async (response) => {
@@ -245,7 +264,7 @@ class ProfileScreen extends Component {
                 if (response.status === 200) {
                     await AsyncStorage.removeItem("sessionToken")
                     await AsyncStorage.removeItem("userID")
-             
+                    this.setState({ showModal: true })
                     navigation.navigate('Login')
 
 
@@ -254,15 +273,15 @@ class ProfileScreen extends Component {
                 else if (response.status === 401) {
                     await AsyncStorage.removeItem("sessionToken")
                     await AsyncStorage.removeItem("userID")
-               
+
                     navigation.navigate('Login')
                 }
 
 
 
                 else {
-
-                    throw "Something went wrong"
+                    this.setState({ showModal: true })
+                    this.setState({ errorText: 'Something went wrong' })
 
                 }
 
@@ -306,7 +325,7 @@ class ProfileScreen extends Component {
                             'X-Authorization': sessionToken,
 
                         },
-        
+
                         body: blob,
 
 
@@ -334,7 +353,7 @@ class ProfileScreen extends Component {
         })
 
 
-       
+
 
     }
 
@@ -377,7 +396,7 @@ class ProfileScreen extends Component {
 
 
     componentDidMount() {
- 
+
         this.unsubscribe = this.props.navigation.addListener('focus', () => {
             this.loadUserInfo();
             this.getUserProfilePic();
@@ -403,7 +422,7 @@ class ProfileScreen extends Component {
 
                     <View style={GeneralStyles.headerWrapper}>
                         <TouchableOpacity onPress={this.handlePfpUpload}>
-                          
+
 
 
                             <Image
@@ -426,21 +445,21 @@ class ProfileScreen extends Component {
                     <View style={GeneralStyles.registerFormWrapper}>
 
                         <View>
-                            <TextInput style={this.styles.input} onChangeText={firstName => this.setState({ firstName })} placeholder="First Name" />
+                            <TextInput style={GeneralStyles.input} onChangeText={firstName => this.setState({ firstName })} placeholder="First Name" />
 
                         </View>
 
                         <View>
-                            <TextInput style={this.styles.input} onChangeText={lastName => this.setState({ lastName })} placeholder="Last Name" />
+                            <TextInput style={GeneralStyles.input} onChangeText={lastName => this.setState({ lastName })} placeholder="Last Name" />
                         </View>
 
 
                         <View>
-                            <TextInput style={this.styles.input} onChangeText={email => this.setState({ email })} placeholder="Email" value={this.state.origEmail} />
+                            <TextInput style={GeneralStyles.input} onChangeText={email => this.setState({ email })} placeholder="Email" value={this.state.origEmail} />
 
                         </View>
                         <View>
-                            <TextInput style={this.styles.input} onChangeText={password => this.setState({ password })}
+                            <TextInput style={GeneralStyles.input} onChangeText={password => this.setState({ password })} 
                                 secureTextEntry={!this.state.isSecureEntry} />
 
                             <TouchableOpacity
@@ -459,6 +478,39 @@ class ProfileScreen extends Component {
                             </TouchableOpacity>
                         </View>
 
+                        <View style={GeneralStyles.modalCenteredView}>
+                            <Modal transparent={true} animationType="fade" isVisible={this.state.showModal}>
+
+                                <View style={GeneralStyles.modalCenteredView}>
+                                    <View style={GeneralStyles.modalView}>
+
+                                        <View style={{ alignItems: 'center' }}>
+                                            <View style={GeneralStyles.modalHead}>
+                                                <Text style={GeneralStyles.modalText}>{this.state.errorText} </Text>
+
+                                            </View>
+
+                                            <TouchableOpacity
+                                                onPress={this.makesModalVisible}>
+
+                                                <View style={[GeneralStyles.button, GeneralStyles.buttonOpen]}>
+                                                    <Text style={GeneralStyles.textStyle}> Ok </Text>
+                                                </View>
+
+                                            </TouchableOpacity>
+
+
+                                        </View>
+
+
+
+
+                                    </View>
+                                </View>
+
+                            </Modal>
+                        </View>
+
 
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <Pressable style={GeneralStyles.signUpButton} onPress={() => { this.updateUserInfo(); }} >
@@ -473,15 +525,11 @@ class ProfileScreen extends Component {
                                 </Text>
                             </Pressable>
                         </View>
-
-
-
-
-
-
-
-
                     </View>
+
+
+
+
 
 
 

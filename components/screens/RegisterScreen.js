@@ -6,8 +6,10 @@ import HomeScreen from './HomeScreen';
 import GeneralStyles from '../../styles/GeneralStyles';
 import InputField from '../../helpers/InputValidator';
 import * as EmailValidator from 'email-validator';
-
-
+import PropTypes from 'prop-types';
+import React from 'react';
+import InputValidator from '../../helpers/InputValidator';
+import Modal from "react-native-modal";
 
 class RegisterScreen extends Component {
 
@@ -25,6 +27,8 @@ class RegisterScreen extends Component {
       invalidPassword: false,
       invalidFirstName: false,
       invalidLastName: false,
+      showModal: false,
+      isLoading: true,
 
 
     }
@@ -34,35 +38,18 @@ class RegisterScreen extends Component {
 
   styles = StyleSheet.create({
     container: {
-      backgroundColor: '#DEF2E7',
+      backgroundColor: colors.mainAppScreens,
       flex: 1,
       alignItems: 'center',
       justifyContent: 'space-between',
       flexDirection: 'column',
     },
 
-    createAccountWrapper: {
-      paddingTop: 60,
-      paddingLeft: 53,
-      paddingRight: 38,
-
-
-    },
 
     createAccountImage: {
       width: 350,
       height: 150,
       alignSelf: 'flex-end',
-
-    },
-
-
-    textFailed: {
-      alignSelf: 'center',
-      color: 'red',
-      fontSize: 12,
-
-
 
     },
 
@@ -83,59 +70,45 @@ class RegisterScreen extends Component {
 
   handleRegistration = () => {
 
-    const PASSWORD_REGEX = new RegExp("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$")
-    const NAME_REGEX = /^[a-z ,.'-]+$/i;
+    if (!InputField.validName(this.state.forename)) {
 
-
-    if (!NAME_REGEX.test(this.state.forename)) {
-      this.setState({ invalidFirstName: true })
       this.setState({ errorText: 'Please enter a First name' })
+      this.setState({ showModal: true })
       return;
     }
 
 
-    else {
-      this.setState({ invalidFirstName: false })
-    }
-
-    if (!NAME_REGEX.test(this.state.surname)) {
-      this.setState({ invalidLastName: true })
+    if (!InputField.validName(this.state.surname)) {
       this.setState({ errorText: 'Please enter a Last name' })
+      this.setState({ showModal: true })
+
       return;
     }
 
-    else {
-      this.setState({ invalidLastName: false })
-    }
-
-
-
-    if (!EmailValidator.validate(this.state.email)) {
-      this.setState({ invalidEmail: true })
+    if (!InputField.isValidEmail(this.state.email)) {
       this.setState({ errorText: 'Invalid Email, try again' })
+      this.setState({ showModal: true })
+
       return;
     }
 
-    else {
-      this.setState({ invalidEmail: false })
-    }
-
-
-    if (!PASSWORD_REGEX.test(this.state.password)) {
-      this.setState({ invalidPassword: true })
+    if (!InputField.isValidPassword(this.state.password)) {
       this.setState({
-        errorText: "Password must contain: one number, at least one upper" + ' \n' +
-          "lower,special, number, and at least 8 characters long)"
+        errorText:
+          "Password must contain: one number, at least one upper,lower,special, number, and at least 8 characters long)"
       })
+      this.setState({ showModal: true })
       return;
     }
 
+
     else {
-      this.setState({ invalidPassword: false })
+
+      this.addNewUser()
+
     }
 
 
-    this.addNewUser()
 
   }
 
@@ -167,20 +140,28 @@ class RegisterScreen extends Component {
 
       .then((response) => {
 
+
+
         console.log(response.status);
+        if (response.status === 201) {
+          this.setState({ errorText: 'Successfully Created An Account' })
+          this.setState({ showModal: true })
+          setTimeout(() => { navigation.navigate('Login'),1000})
+          
+        }
+
         if (response.status === 400) {
-          this.setState({ invalidEmail: true });
-          this.setState({ errorText: 'Email has already been taken' })
+          this.setState({ errorText: 'Email has already been taken, Try Again' })
+          this.setState({ showModal: true })
+
         }
 
         else if (response.status === 500) {
-          this.setState({ errorText: 'Try Again' })
+          this.setState({ errorText: 'Something went Wrong, Try Again' })
+          this.setState({ showModal: true })
         }
 
-        else {
-          this.setState({ isValidEmail: true });
-          setTimeout(() => { this.props.navigation.navigate('Login') })
-        }
+
 
       })
 
@@ -195,96 +176,149 @@ class RegisterScreen extends Component {
 
 
 
+  static get propTypes() {
+    return {
+      navigation: PropTypes.object.isRequired,
+    };
+  }
+
+  makesModalVisible = () => {
+    this.setState({ showModal: true })
+
+    setTimeout(() => {
+      this.setState({ showModal: false })
+    }, 100);
+  }
+
+
+  componentDidMount() {
+    this.unsubscribe = this.props.navigation.addListener('focus', () => {
+      this.setState({ isLoading: false })
+    });
+
+  }
+
+  componentWillUnmount() {
+    this.unsubscribe();
+
+  }
+
+
+
+
 
   render() {
     const navigation = this.props.navigation;
 
-    return (
-      <View style={this.styles.container}>
-        <SafeAreaView>
-          <View style={this.styles.createAccountWrapper}>
-            <Image
-              source={require('../../assets/images/createAccount.png')}
-              style={this.styles.createAccountImage}
-            />
-          </View>
 
-          <View style={GeneralStyles.registerFormWrapper}>
+    if (this.state.isLoading) {
+      return (<View>
+        <ActivityIndicator size="large" />
+      </View>)
 
-            <View>
-              <TextInput style={GeneralStyles.inputFieldBox} onChangeText={forename => this.setState({ forename })} placeholder="First Name" />
-              {this.state.invalidFirstName ? (
-                <Text style={this.styles.textFailed}>{this.state.errorText}</Text>
-              ) : (
-                <Text style={this.styles.textFailed}> </Text>
-              )}
+    }
+
+    else {
+      return (
+        <View style={this.styles.container}>
+          <SafeAreaView>
+            <View style={GeneralStyles.accountWrapper}>
+              <Image
+                source={require('../../assets/images/createAccount.png')}
+                style={this.styles.createAccountImage}
+              />
             </View>
 
-            <View>
-              <TextInput style={GeneralStyles.inputFieldBox} onChangeText={surname => this.setState({ surname })} placeholder="Last Name" />
-              {this.state.invalidLastName ? (
-                <Text style={this.styles.textFailed}>{this.state.errorText}</Text>
-              ) : (
-                <Text style={this.styles.textFailed}> </Text>
-              )}
-            </View>
+            <View style={GeneralStyles.registerFormWrapper}>
 
-            <View>
-              <TextInput style={GeneralStyles.inputFieldBox} onChangeText={email => this.setState({ email })} placeholder="Email" />
-              {this.state.invalidEmail ? (
-                <Text style={this.styles.textFailed}>{this.state.errorText}</Text>
-              ) : (
-                <Text style={this.styles.textFailed}> </Text>
-              )}
-            </View>
+              <View>
+                <TextInput style={GeneralStyles.input} onChangeText={forename => this.setState({ forename })} placeholder="First Name" />
 
-            <View>
+              </View>
 
-              <TextInput secureTextEntry={true} style={GeneralStyles.inputFieldBox}
-                onChangeText={password => this.setState({ password })}
-                placeholder="Password" />
-            </View>
+              <View>
+                <TextInput style={GeneralStyles.input} onChangeText={surname => this.setState({ surname })} placeholder="Last Name" />
 
-            <View>
-              {this.state.invalidPassword ? (
-                <Text style={this.styles.textFailed}> {this.state.errorText}</Text>
-              ) : (
-                <Text style={this.styles.textFailed}> </Text>
-              )}
+              </View>
+
+              <View>
+                <TextInput style={GeneralStyles.input} onChangeText={email => this.setState({ email })} placeholder="Email" />
+
+              </View>
+
+              <View>
+
+                <TextInput secureTextEntry={true} style={GeneralStyles.input}
+                  onChangeText={password => this.setState({ password })}
+                  placeholder="Password" />
+              </View>
+
+
             </View>
 
 
-          </View>
 
-          <View style={GeneralStyles.signUpWrapper}>
-            <View style={GeneralStyles.homeScreenTextWrapper}>
-              <Text style={GeneralStyles.homeScreenText}>
-                Already have an account?
-              </Text>
-              <Pressable onPress={() => navigation.navigate('Login')}>
-                <Text style={{ fontWeight: '600', color: colors.greenBars }}> Log in</Text>
+            <View style={GeneralStyles.signUpWrapper}>
+              <View style={GeneralStyles.homeScreenTextWrapper}>
+                <Text style={GeneralStyles.homeScreenText}>
+                  Already have an account?
+                </Text>
+                <Pressable onPress={() => navigation.navigate('Login')}>
+                  <Text style={{ fontWeight: '600', color: colors.greenBars }}> Log in</Text>
+                </Pressable>
+
+
+              </View>
+
+              <Pressable style={GeneralStyles.signUpButton} onPress={() => { this.handleRegistration(); }} >
+                <Text style={GeneralStyles.signUpButtonText}>
+                  Create Account
+                </Text>
               </Pressable>
-
-
             </View>
 
-            <Pressable style={GeneralStyles.signUpButton} onPress={() => { this.handleRegistration(); }} >
-              <Text style={GeneralStyles.signUpButtonText}>
-                Create Account
-              </Text>
-            </Pressable>
-          </View>
+
+            <View style={GeneralStyles.modalCenteredView}>
+              <Modal transparent={true} animationType="fade" isVisible={this.state.showModal}>
+
+                <View style={GeneralStyles.modalCenteredView}>
+                  <View style={GeneralStyles.modalView}>
+
+                    <View style={{ alignItems: 'center' }}>
+                      <View style={GeneralStyles.modalHead}>
+                        <Text style={GeneralStyles.modalText}>{this.state.errorText} </Text>
+
+                      </View>
+
+                      <TouchableOpacity
+                       onPress={this.makesModalVisible}>
+
+                        <View style={[GeneralStyles.button, GeneralStyles.buttonOpen]}>
+                          <Text style={GeneralStyles.textStyle}> Ok </Text>
+                        </View>
+
+                      </TouchableOpacity>
+
+
+                    </View>
 
 
 
 
-        </SafeAreaView>
+                  </View>
+                </View>
 
-      </View>
-    );
+              </Modal>
+            </View>
 
 
 
+
+          </SafeAreaView>
+
+        </View>
+      );
+    }
 
 
 

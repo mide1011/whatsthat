@@ -10,7 +10,8 @@ import InputValidator from '../../helpers/InputValidator';
 import Moment from 'moment';
 import ChatHelper from '../../helpers/ChatHelper';
 import ChatBG from '../../assets/images/chatBG.png'
-//import  Colors  from 'react-native/Libraries/NewAppScreen';
+import PropTypes from 'prop-types';
+
 
 class ChatsScreen extends Component {
 
@@ -31,6 +32,10 @@ class ChatsScreen extends Component {
             isUserAdded: false,
             viewMembers: false,
             editMessage: false,
+            showModal: false,
+
+
+
 
             newChatName: '',
             newUserToAddID: '',
@@ -38,16 +43,8 @@ class ChatsScreen extends Component {
             origMessage: '',
             newMessage: '',
             messageAuthorID: '',
-
-
-
-
-
-
-
         };
 
-        // this.onSend = this.onSend.bind(this);
 
     }
 
@@ -304,23 +301,23 @@ class ChatsScreen extends Component {
             .then((response) => {
                 if (response.status === 200) {
                     return response.json()
+
                 }
 
                 else if (response.status === 401) {
                     this.setState({ errorText: 'Log In and Try Again' })
+                    this.setState({ showModal: true })
                 }
 
                 else if (response.status === 500) {
                     this.setState({ errorText: 'Try Again, Make sure you are Signed in' })
+                    this.setState({ showModal: true })
                 }
 
             })
 
             .then(async (messages) => {
                 console.log(messages)
-
-
-
                 const data = messages
                 this.setState({ chatMessages: data })
                 this.setState({ currentUserID: userID })
@@ -362,14 +359,27 @@ class ChatsScreen extends Component {
                     this.loadSingleChat()
                     this.setState({ newChatName: '' });
                     this.setState({ errorText: 'Successfully Updated Your Details' })
+                    this.setState({ showModal: true })
                 }
 
                 else if (response.status === 400) {
                     this.setState({ errorText: 'Try Again' })
+                    this.setState({ showModal: true })
                 }
 
                 else if (response.status === 401) {
                     this.setState({ errorText: 'Try Again, make sure you are signed in' })
+                    this.setState({ showModal: true })
+                }
+
+                else if (response.status === 404) {
+                    this.setState({ errorText: "You can't make this request" })
+                    this.setState({ showModal: true })
+                }
+
+                else if (response.status === 500) {
+                    this.setState({ errorText: "Try again later" })
+                    this.setState({ showModal: true })
                 }
 
             })
@@ -406,22 +416,29 @@ class ChatsScreen extends Component {
                     this.setState({ message: '' });
                 }
                 else if (response.status == 400) {
+                    this.setState({ showModal: true })
                     this.setState({ errorText: "Something went wrong, Try Again" })
                 }
 
                 else if (response.status == 401) {
+                    this.setState({ showModal: true })
                     this.setState({ errorText: "You can't make this request" })
                 }
 
                 else if (response.status == 403) {
+                    this.setState({ showModal: true })
+
                     this.setState({ errorText: "You can't send this message, Try Again" })
                 }
 
                 else if (response.status == 404) {
-                    this.setState({ errorText: "Not Found" })
+                    this.setState({ showModal: true })
+
+                    this.setState({ errorText: "Not Found, Try Again Later" })
                 }
 
                 else if (response.status == 500) {
+                    this.setState({ showModal: true })
                     this.setState({ errorText: "Try Again" })
                 }
 
@@ -435,11 +452,9 @@ class ChatsScreen extends Component {
     }
 
 
-
     addUserToChat = async (chatID) => {
 
         const sessionToken = await AsyncStorage.getItem("sessionToken");
-        // eslint-disable-next-line react/prop-types
         const { navigation } = this.props;
         const userToAddID = this.state.newUserToAddID;
 
@@ -455,26 +470,33 @@ class ChatsScreen extends Component {
             .then((response) => {
                 if (response.status == 200) {
                     this.loadSingleChat();
+                    this.setState({ showModal: true })
+                    this.setState({ errorText: "Successsfully Added User" })
                     this.setState({ newUserToAddID: '' });
                 }
                 else if (response.status == 400) {
+                    this.setState({ showModal: true })
                     this.setState({ errorText: "Something went wrong, Try Again" })
                 }
 
                 else if (response.status == 401) {
+                    this.setState({ showModal: true })
                     this.setState({ errorText: "You can't make this request" })
                 }
 
                 else if (response.status == 403) {
+                    this.setState({ showModal: true })
                     this.setState({ errorText: "You can't send this message, Try Again" })
                 }
 
                 else if (response.status == 404) {
-                    this.setState({ errorText: "Not Found" })
+                    this.setState({ showModal: true })
+                    this.setState({ errorText: "Not Found, Try Again Later" })
                 }
 
                 else if (response.status == 500) {
-                    this.setState({ errorText: "Try Again" })
+                    this.setState({ showModal: true })
+                    this.setState({ errorText: "Try Again Later" })
                 }
 
             })
@@ -502,27 +524,28 @@ class ChatsScreen extends Component {
 
         })
             .then((response) => {
-                if (response.status == 200) {
+                if (response.status === 200) {
                     this.loadSingleChat();
                 }
-                else if (response.status == 400) {
-                    this.setState({ errorText: "Something went wrong, Try Again" })
-                }
 
-                else if (response.status == 401) {
+                else if (response.status === 401) {
+                    this.setState({ showModal: true })
                     this.setState({ errorText: "You can't make this request" })
                 }
 
-                else if (response.status == 403) {
+                else if (response.status === 403) {
+                    this.setState({ showModal: true })
                     this.setState({ errorText: "You can't send this message, Try Again" })
                 }
 
                 else if (response.status == 404) {
-                    this.setState({ errorText: "Not Found" })
+                    this.setState({ showModal: true })
+                    this.setState({ errorText: "Not Found, Try Again" })
                 }
 
                 else if (response.status == 500) {
-                    this.setState({ errorText: "Try Again" })
+                    this.setState({ showModal: true })
+                    this.setState({ errorText: "Try Again, Later" })
                 }
 
             })
@@ -548,27 +571,31 @@ class ChatsScreen extends Component {
 
         })
             .then((response) => {
-                if (response.status == 200) {
+                if (response.status === 200) {
                     this.loadSingleChat();
                 }
-                else if (response.status == 400) {
-                    this.setState({ errorText: "Something went wrong, Try Again" })
-                }
 
-                else if (response.status == 401) {
+                else if (response.status === 401) {
                     this.setState({ errorText: "You can't make this request" })
+                    this.setState({ showModal: true })
+
                 }
 
-                else if (response.status == 403) {
+                else if (response.status === 403) {
                     this.setState({ errorText: "You can't send this message, Try Again" })
+                    this.setState({ showModal: true })
                 }
 
-                else if (response.status == 404) {
+                else if (response.status === 404) {
                     this.setState({ errorText: "Not Found" })
+                    this.setState({ showModal: true })
+
                 }
 
-                else if (response.status == 500) {
+                else if (response.status === 500) {
                     this.setState({ errorText: "Try Again" })
+                    this.setState({ showModal: true })
+
                 }
 
             })
@@ -601,15 +628,33 @@ class ChatsScreen extends Component {
                 if (response.status === 200) {
                     this.loadSingleChat()
                     this.setState({ newMessage: '' });
-                    this.setState({ errorText: 'Successfully Updated Your Details' })
+                    this.setState({ showModal: true })
                 }
 
                 else if (response.status === 400) {
-                    this.setState({ errorText: 'Try Again' })
+                    this.setState({ errorText: "Try Again, You can't make this request" })
+                    this.setState({ showModal: true })
+
                 }
 
                 else if (response.status === 401) {
                     this.setState({ errorText: 'Try Again, make sure you are signed in' })
+                    this.setState({ showModal: true })
+                }
+
+                else if (response.status === 403) {
+                    this.setState({ errorText: 'Try Again, make sure you are signed in' })
+                    this.setState({ showModal: true })
+                }
+
+                else if (response.status === 404) {
+                    this.setState({ errorText: 'Something went wrong try again' })
+                    this.setState({ showModal: true })
+                }
+
+                else if (response.status === 500) {
+                    this.setState({ errorText: 'Try Again Later' })
+                    this.setState({ showModal: true })
                 }
 
             })
@@ -623,19 +668,19 @@ class ChatsScreen extends Component {
     }
 
 
-
-
-
-
+    static get propTypes() {
+        return {
+            navigation: PropTypes.object.isRequired,
+        };
+    }
 
 
     componentDidMount() {
 
         this.loadSingleChat();
-        // eslint-disable-next-line react/prop-types
         this.unsubscribe = this.props.navigation.addListener('focus', () => {
-            this.loadSingleChat();
             this.setState({ isLoading: false })
+            this.loadSingleChat();
 
         });
 
@@ -655,7 +700,7 @@ class ChatsScreen extends Component {
 
 
     chatRoomItemComponent = ({ item }) => {
-        // eslint-disable-next-line react/prop-types
+
         const navigation = this.props.navigation;
         Moment.locale('en');
         const userID = String(item.author.user_id);
@@ -757,15 +802,11 @@ class ChatsScreen extends Component {
     updateChatRoomName = () => {
         this.setState(({ updateChatName }) => ({ updateChatName: !updateChatName }));
 
-
-
     }
 
 
     modalState = () => {
         this.setState(({ modalState }) => ({ modalState: !modalState }));
-
-
 
     }
 
@@ -795,15 +836,20 @@ class ChatsScreen extends Component {
         this.setState({ messageAuthorID: item.author.user_id })
 
 
-
-
-
     }
 
     handleDeleteMessage = () => {
         this.handleEditedChat();
         this.deleteMessageFromChat(this.state.messageToEditID, this.state.chatID)
 
+    }
+
+    makesModalVisible = () => {
+        this.setState({ showModal: true })
+
+        setTimeout(() => {
+            this.setState({ showModal: false })
+        }, 100);
     }
 
 
@@ -813,7 +859,7 @@ class ChatsScreen extends Component {
 
     render() {
 
-        // eslint-disable-next-line react/prop-types
+
         const navigation = this.props.navigation;
 
         if (this.state.isLoading) {
@@ -825,16 +871,7 @@ class ChatsScreen extends Component {
 
         else {
 
-
-
-
-
-
-
             return (
-
-
-
 
                 <>
 
@@ -844,7 +881,6 @@ class ChatsScreen extends Component {
 
 
                         <TouchableOpacity
-                            // eslint-disable-next-line react/prop-types
                             onPress={() => { navigation.navigate('Messages') }} >
                             <Ionicons name="chevron-back" size={33} />
 
@@ -892,6 +928,42 @@ class ChatsScreen extends Component {
 
                         </View>
                     </View>
+
+
+                    <View style={GeneralStyles.modalCenteredView}>
+                        <Modal transparent={true} animationType="fade" isVisible={this.state.showModal}>
+
+                            <View style={GeneralStyles.modalCenteredView}>
+                                <View style={GeneralStyles.modalView}>
+
+                                    <View style={{ alignItems: 'center' }}>
+                                        <View style={GeneralStyles.modalHead}>
+                                            <Text style={GeneralStyles.modalText}>{this.state.errorText} </Text>
+
+                                        </View>
+
+                                        <TouchableOpacity
+                                            onPress={this.makesModalVisible}>
+
+                                            <View style={[GeneralStyles.button, GeneralStyles.buttonOpen]}>
+                                                <Text style={GeneralStyles.textStyle}> Ok </Text>
+                                            </View>
+
+                                        </TouchableOpacity>
+
+
+                                    </View>
+
+
+
+
+                                </View>
+                            </View>
+
+                        </Modal>
+                    </View>
+
+
 
                     <View style={this.styles.centeredView}>
                         <Modal transparent={true} animationType="fade" isVisible={this.state.updateChatName}
@@ -1089,10 +1161,6 @@ class ChatsScreen extends Component {
 
 
 
-
-
-
-
                     <FlatList
 
                         data={this.state.chatMessages.messages}
@@ -1127,15 +1195,7 @@ class ChatsScreen extends Component {
 
                             </View>
                         </TouchableOpacity>
-
-
-
-
                     </View>
-
-
-
-
 
                 </>
 
@@ -1148,13 +1208,6 @@ class ChatsScreen extends Component {
 
 
         }
-
-
-
-
-
-
-
 
 
     }

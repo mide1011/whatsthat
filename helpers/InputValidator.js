@@ -2,8 +2,6 @@ import * as EmailValidator from 'email-validator';
 
 
 
-
-
 const isValidEmail = (email) => {
   return EmailValidator.validate(email)
 
@@ -28,8 +26,8 @@ const validateDetails = (firstName, lastName, email, password) => {
 
   return (validName(firstName) && validName(lastName) && isValidEmail(email) && isValidPassword(password))
 
-
   }
+
 
 
   const InputValidator = {

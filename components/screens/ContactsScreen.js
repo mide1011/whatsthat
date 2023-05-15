@@ -28,6 +28,7 @@ class ContactsScreen extends Component {
             isLoading: true,
             currentUser: null,
             checkContact: false,
+            showModal: false,
 
         };
 
@@ -150,16 +151,18 @@ class ContactsScreen extends Component {
                 }
 
                 else if (response.status === 400) {
-                    this.setState({ invalidPassword: true });
-                    this.setState({ errorText: "You can't add youself as a contact" })
+                    this.setState({ errorText: "Something went wrong, Try Again" })
+                    this.setState({ showModal: true })
                 }
 
                 else if (response.status === 401) {
-                    this.setState({ errorText: 'Try Again' })
+                    this.setState({ errorText: "Try Again, Make Sure You're Logged In" })
+                    this.setState({ showModal: true })
                 }
 
-                else if (response.status === 404) {
-                    this.setState({ errorText: "Contact does not seem to exist" })
+                else if (response.status === 500) {
+                    this.setState({ errorText: "Try Again Later" })
+                    this.setState({ showModal: true })
                 }
 
                 this.setState({ searchedContacts: [] })
@@ -204,11 +207,15 @@ class ContactsScreen extends Component {
                 }
 
                 else if (response.status === 401) {
-                    this.setState({ errorText: 'Try Again' })
+                    this.setState({ errorText: "Make Sure You're Logged In" })
+                    this.setState({ showModal: true })
+
                 }
 
                 else if (response.status === 500) {
                     this.setState({ errorText: 'Try Again, make sure you are signed in' })
+                    this.setState({ showModal: true })
+
                 }
 
             })
@@ -247,19 +254,31 @@ class ContactsScreen extends Component {
 
         })
             .then((response) => {
-                if (response.status == 200) {
+                if (response.status === 200) {
                     this.loadContacts();
                 }
-                else if (response.status == 400) {
+                else if (response.status === 400) {
                     this.setState({ errorText: "You can't add youself as a contact" })
+                    this.setState({ showModal: true })
+
                 }
 
-                else if (response.status == 401 || 500) {
+                else if (response.status === 401) {
                     this.setState({ errorText: 'Try Again' })
+                    this.setState({ showModal: true })
+
                 }
 
-                else if (response.status == 404) {
+                else if (response.status === 404) {
                     this.setState({ errorText: "Contact does not seem to exist" })
+                    this.setState({ showModal: true })
+
+                }
+
+                else if (response.status === 500) {
+                    this.setState({ errorText: "Try Again Later" })
+                    this.setState({ showModal: true })
+
                 }
 
             })
@@ -291,17 +310,29 @@ class ContactsScreen extends Component {
             .then((response) => {
                 if (response.status == 200) {
                     this.loadContacts();
+                    this.setState({ errorText: "Sucessfully Removed" })
+                    this.setState({ showModal: true })
                 }
                 else if (response.status == 400) {
-                    this.setState({ errorText: "You can't DELETE yourself" })
+                    this.setState({ errorText: "You can't remove yourself" })
+                    this.setState({ showModal: true })
+
                 }
 
-                else if (response.status == 401 || 500) {
-                    this.setState({ errorText: 'Try Again' })
+                else if (response.status == 401) {
+                    this.setState({ errorText: "Make Sure You're Logged In" })
+                    this.setState({ showModal: true })
+
                 }
 
                 else if (response.status == 404) {
                     this.setState({ errorText: "Contact does not seem to exist" })
+                    this.setState({ showModal: true })
+                }
+
+                else if (response.status == 404) {
+                    this.setState({ errorText: "Try Again, Later" })
+                    this.setState({ showModal: true })
                 }
 
             })
@@ -331,19 +362,30 @@ class ContactsScreen extends Component {
 
         })
             .then((response) => {
-                if (response.status == 200) {
+                if (response.status === 200) {
                     this.loadContacts();
                 }
-                else if (response.status == 400) {
+                else if (response.status === 400) {
                     this.setState({ errorText: "You can't DELETE yourself" })
+                    this.setState({ showModal: true })
+
                 }
 
-                else if (response.status == 401 || 500) {
-                    this.setState({ errorText: 'Try Again' })
+                else if (response.status === 401) {
+                    this.setState({ errorText: "Try Again, Makre you're Loggen In" })
+                    this.setState({ showModal: true })
+
                 }
 
-                else if (response.status == 404) {
+                else if (response.status === 404) {
                     this.setState({ errorText: "Contact does not seem to exist" })
+                    this.setState({ showModal: true })
+                }
+
+                else if (response.status === 500) {
+                    this.setState({ errorText: "Try Again Later" })
+                    this.setState({ showModal: true })
+
                 }
 
             })
@@ -397,9 +439,9 @@ class ContactsScreen extends Component {
         return (
             <View style={GeneralStyles.contactsWrapper} key={item.user_id}>
 
-                
+
                 <Text style={GeneralStyles.infoText}>
-                    {item.user_id +  " " + item.first_name + " " + item.last_name}
+                    {item.user_id + " " + item.first_name + " " + item.last_name}
                 </Text>
 
                 <View style={GeneralStyles.iconSpacing}>
@@ -452,6 +494,15 @@ class ContactsScreen extends Component {
 
 
 
+    }
+
+
+    makesModalVisible = () => {
+        this.setState({ showModal: true })
+
+        setTimeout(() => {
+            this.setState({ showModal: false })
+        }, 100);
     }
 
 
@@ -519,7 +570,7 @@ class ContactsScreen extends Component {
 
                             }
 
-                            {
+                            {/* {
                                 this.state.errorText.length > 0 &&
 
 
@@ -547,10 +598,42 @@ class ContactsScreen extends Component {
                                 </View>
 
 
-                            }
-
+                            } */}
 
                         </ScrollView>
+
+                        <View style={GeneralStyles.modalCenteredView}>
+                            <Modal transparent={true} animationType="fade" isVisible={this.state.showModal}>
+
+                                <View style={GeneralStyles.modalCenteredView}>
+                                    <View style={GeneralStyles.modalView}>
+
+                                        <View style={{ alignItems: 'center' }}>
+                                            <View style={GeneralStyles.modalHead}>
+                                                <Text style={GeneralStyles.modalText}>{this.state.errorText} </Text>
+
+                                            </View>
+
+                                            <TouchableOpacity
+                                                onPress={this.makesModalVisible}>
+
+                                                <View style={[GeneralStyles.button, GeneralStyles.buttonOpen]}>
+                                                    <Text style={GeneralStyles.textStyle}> Ok </Text>
+                                                </View>
+
+                                            </TouchableOpacity>
+
+
+                                        </View>
+
+
+
+
+                                    </View>
+                                </View>
+
+                            </Modal>
+                        </View>
 
                     </SafeAreaView>
 

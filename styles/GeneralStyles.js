@@ -14,7 +14,7 @@ export default StyleSheet.create({
 
   homeScreenText: {
     fontSize: 14,
-    fontWeight: '200',
+    fontWeight: 'bold',
     color: colors.darkText,
     flexDirection: 'row',
 
@@ -279,8 +279,6 @@ export default StyleSheet.create({
   },
 
   mainAppContainer: {
-
-
     flex: 1,
     backgroundColor: colors.background,
     alignItems: 'center',
@@ -288,7 +286,100 @@ export default StyleSheet.create({
     flexDirection: 'column',
 
 
-  }
+  },
+
+
+  modalCenteredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 22,
+  },
+
+
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+
+
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+  },
+  buttonOpen: {
+    backgroundColor: "#34B7F1",
+  },
+  buttonClose: {
+    backgroundColor: '#2196F3',
+  },
+  textStyle: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  modalText: {
+
+    marginTop: 10,
+    fontSize: 16,
+    color: '#34633E',
+    opacity: '90%',
+    fontWeight: 'bold',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+
+  modalHead: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+  },
+
+  modalInput: {
+    borderBottomColor: '#14c83c',
+    borderBottomWidth: 2,
+    padding: 8,
+    margin: 30,
+    marginTop: 10,
+    fontSize: 13,
+    color: '#34633E',
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+
+  input: {
+    width: 305,
+    height: 50,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: colors.greenBars,
+    borderRadius: 5,
+    backgroundColor: colors.tabBarTheme,
+
+},
+
+
+accountWrapper: {
+  paddingTop: 60,
+  paddingLeft: 53,
+  paddingRight: 38,
+
+
+},
 
 
 

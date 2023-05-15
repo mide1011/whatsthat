@@ -228,8 +228,8 @@ class MessagesScreen extends Component {
     componentDidMount() {
         // eslint-disable-next-line react/prop-types
         this.unsubscribe = this.props.navigation.addListener('focus', () => {
-            this.loadChats();
             this.setState({ isLoading: false })
+            this.loadChats();
 
         });
     }
