@@ -2,7 +2,6 @@ import { Component, useState } from 'react';
 import { Text, TextInput, View, Image, Button, Alert, SafeAreaView, StyleSheet, Pressable } from 'react-native';
 import { ActivityIndicator, TouchableOpacity } from 'react-native-web';
 import colors from '../../assets/colors/colors';
-import HomeScreen from './HomeScreen';
 import GeneralStyles from '../../styles/GeneralStyles';
 import userLogin from '../../components/screens/RegisterScreen';
 import React from 'react';
@@ -116,6 +115,12 @@ class ProfileScreen extends Component {
         }
 
     });
+
+
+    makesModalVisible = () => {
+
+        this.setState(({ showModal }) => ({ showModal: !showModal }));
+    }
 
     managePasswordVisibility = () => {
         this.setState({ isSecureEntry: !this.state.isSecureEntry })

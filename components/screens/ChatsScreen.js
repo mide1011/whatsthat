@@ -208,7 +208,6 @@ class ChatsScreen extends Component {
 
     async loadSingleChat() {
         const sessionToken = await AsyncStorage.getItem("sessionToken");
-        // eslint-disable-next-line react/prop-types
         const { navigation } = this.props;
         // eslint-disable-next-line react/prop-types
         const { chatID } = this.props.route.params;
@@ -655,8 +654,6 @@ class ChatsScreen extends Component {
 
 
 
-
-
     static get propTypes() {
         return {
             navigation: PropTypes.object.isRequired,
@@ -878,13 +875,6 @@ class ChatsScreen extends Component {
             this.setState({ showModal: false })
         }, 100);
     }
-
-
-
-
-
-
-
 
 
 
@@ -1264,11 +1254,6 @@ class ChatsScreen extends Component {
                                 multiline
 
                             />
-
-
-
-
-
 
                         </View>
 
