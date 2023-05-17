@@ -13,7 +13,7 @@ import BlockedScreen from '../components/screens/BlockedScreen';
 import colors from '../assets/colors/colors';
 import React from 'react';
 import ChatsScreen from '../components/screens/ChatsScreen';
-
+import CameraScreen from '../components/screens/CameraSreen';
 
 const Stack = createNativeStackNavigator();
 const Tabs = createBottomTabNavigator();
@@ -139,7 +139,7 @@ class myNav extends Component {
             name="Login" component={LoginScreen} options={{ headerShown: false }} />
           <Stack.Screen
             name="ProfileScreen" component={TabsStackScreen} options={{ headerShown: false }} />
-
+          <Stack.Screen name="CameraScreen" component={CameraScreen} />
         </Stack.Navigator>
 
 

@@ -10,6 +10,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 
+
+
+
 class ContactsScreen extends Component {
 
     constructor(props) {
@@ -31,12 +34,14 @@ class ContactsScreen extends Component {
             currentUser: null,
             checkContact: false,
             showModal: false,
-           
+         
+
         };
 
 
 
     }
+
 
 
     styles = StyleSheet.create({
@@ -217,6 +222,9 @@ class ContactsScreen extends Component {
         })
             .then((response) => {
                 if (response.status === 200) {
+                    this.setState({ errorText: "Sucessfully Added" })
+                    this.setState({ searchedValue: '' })
+                    this.setState({ showModal: true })
                     this.loadContacts();
                 }
                 else if (response.status === 400) {
@@ -358,6 +366,9 @@ class ContactsScreen extends Component {
 
 
     }
+
+
+
 
 
     searchItemComponent = ({ item }) => {

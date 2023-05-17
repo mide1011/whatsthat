@@ -11,6 +11,7 @@ import Moment from 'moment';
 import ChatHelper from '../../helpers/ChatHelper';
 import ChatBG from '../../assets/images/chatBG.png'
 import PropTypes from 'prop-types';
+import moment from 'moment';
 
 
 class ChatsScreen extends Component {
@@ -22,7 +23,10 @@ class ChatsScreen extends Component {
             chatMessages: [],
             messages: [],
             messagesForServer: [],
-            draftMessages: [],
+
+
+
+            userDraftmessage: '',
             message: '',
             chatName: '',
             chatOwnerID: '',
@@ -45,6 +49,8 @@ class ChatsScreen extends Component {
             origMessage: '',
             newMessage: '',
             messageAuthorID: '',
+            drafts: [],
+            draftID: '',
         };
 
 
@@ -284,8 +290,6 @@ class ChatsScreen extends Component {
                 if (response.status === 200) {
                     this.loadSingleChat()
                     this.setState({ newChatName: '' });
-                    this.setState({ errorText: 'Successfully Updated Your Details' })
-                    this.setState({ showModal: true })
                 }
 
                 else if (response.status === 400) {
@@ -554,6 +558,7 @@ class ChatsScreen extends Component {
                 if (response.status === 200) {
                     this.loadSingleChat()
                     this.setState({ newMessage: '' });
+                    this.setState({ errorText: "Edited Message" })
                     this.setState({ showModal: true })
                 }
 
@@ -595,52 +600,43 @@ class ChatsScreen extends Component {
 
 
     loadDrafts = async () => {
+
         try {
-
-            const drafts = await AsyncStorage.getItem("userDrafts");
-            const userDrafts = JSON.parse(drafts)
-
-            if (drafts) {
-                this.setState({ draftMessages: userDrafts.map((item) => item.message) })
-                console.log(drafts)
+            const savedDrafts = await AsyncStorage.getItem('drafts');
+            if (savedDrafts) {
+                this.setState({ drafts: JSON.parse(savedDrafts) });
             }
-
-
-
-        }
-
-        catch (error) {
-            console.log(error)
-
+        } catch (error) {
+            console.log(error);
         }
     };
 
+
     saveDrafts = async () => {
-        const { draftMessages } = this.state;
-        const { message } = this.state;
-        const newDraft = { id: Date.now(), message }
-        const updatedDrafts = [...draftMessages, newDraft];
+
         try {
+            const { drafts, message } = this.state;
 
-            await AsyncStorage.setItem("userDrafts", JSON.stringify(updatedDrafts));
+            const newDraft = { id: moment().format('HH:mm:ss'), message, chatID: this.state.chatID };
+            const updatedDrafts = [...drafts, newDraft];
+
+            await AsyncStorage.setItem('drafts', JSON.stringify(updatedDrafts));
             this.setState({ drafts: updatedDrafts, message: '' });
+            this.setState({ showModal: true })
+
+            this.setState({ errorText: "Saved This Draft" })
+        } catch (error) {
+            console.log(error);
         }
+    };
 
-        catch (error) {
-            console.log(error)
-
-        }
-
-
-
-    }
 
     deleteDraft = async (id) => {
-        const { draftMessages } = this.state
-        const { updatedDrafts } = draftMessages.filter((draftMessages) => draftMessages.id !== id);
+        const { drafts } = this.state
+        const { updatedDrafts } = drafts.filter((draft) => draft.chatID !== id);
 
         try {
-            await AsyncStorage.setItem("userDrafts", JSON.stringify(updatedDrafts));
+            await AsyncStorage.setItem('drafts', JSON.stringify(updatedDrafts));
             this.setState({ drafts: updatedDrafts });
         }
 
@@ -648,7 +644,6 @@ class ChatsScreen extends Component {
             console.log(error)
 
         }
-
 
     }
 
@@ -674,8 +669,6 @@ class ChatsScreen extends Component {
         this.interval = setInterval(() => {
             this.loadSingleChat();
         }, 3000);
-
-
     }
 
     componentWillUnmount() {
@@ -788,32 +781,35 @@ class ChatsScreen extends Component {
 
 
     draftsItemComponent = ({ item }) => {
+        if (item.chatID ===  this.state.chatID) {
+            return (
+                <View style={GeneralStyles.contactsWrapper} key={item}>
+                    <Text style={GeneralStyles.infoText}>
 
-        return (
-            <View style={GeneralStyles.contactsWrapper} key={item}>
-                <Text style={GeneralStyles.infoText}>
-                    {item}
-                </Text>
+                        {item.message}
+                    </Text>
 
-                <View style={GeneralStyles.iconSpacing}>
+                    <View style={GeneralStyles.iconSpacing}>
 
-                    <View style={{ margin: 10 }}>
+                        <View style={{ margin: 10 }}>
 
-                        <TouchableOpacity
-                            onPress={() => { this.deleteDraft(item) }}>
-                            <EvilIcons name="trash" size={25} color="grey" />
-                        </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => { this.deleteDraft(item.chatID) }}>
+                                <EvilIcons name="trash" size={25} color="grey" />
+                            </TouchableOpacity>
 
+
+                        </View>
 
                     </View>
+
 
                 </View>
 
 
-            </View>
+            )
+        }
 
-
-        )
 
     }
 
@@ -884,6 +880,7 @@ class ChatsScreen extends Component {
 
 
         const navigation = this.props.navigation;
+
 
         if (this.state.isLoading) {
             return (<View>
@@ -1155,8 +1152,10 @@ class ChatsScreen extends Component {
 
 
                                     <FlatList
-                                        data={this.state.draftMessages}
+                                        data={this.state.drafts}
                                         renderItem={this.draftsItemComponent}
+
+
 
                                     />
 

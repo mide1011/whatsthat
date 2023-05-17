@@ -8,7 +8,7 @@ import React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import InputValidator from '../../helpers/InputValidator';
 import Modal from "react-native-modal";
-import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { EvilIcons } from '@expo/vector-icons';
 import PropTypes from 'prop-types';
 import * as ImagePicker from 'expo-image-picker';
 class ProfileScreen extends Component {
@@ -410,7 +410,12 @@ class ProfileScreen extends Component {
         this.unsubscribe = this.props.navigation.addListener('focus', () => {
             this.loadUserInfo();
             this.getUserProfilePic();
+            
         });
+
+
+       
+
     }
 
     componentWillUnmount() {
@@ -434,7 +439,6 @@ class ProfileScreen extends Component {
                         <TouchableOpacity onPress={this.handlePfpUpload}>
 
 
-
                             <Image
                                 source={{ uri: this.state.image }}
                                 style={this.styles.userPFP}
@@ -447,12 +451,15 @@ class ProfileScreen extends Component {
                             <Text style={GeneralStyles.headerText}> {this.state.origFirstName} {""}{this.state.origLastName} </Text>
                         </View>
 
-                        <View>
-                            <Text style={this.styles.updateUserText}> Update Your Details </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={this.styles.updateUserText}>Take a Picture </Text>
+                            <TouchableOpacity onPress={() => { navigation.navigate('CameraScreen') }}>
+                                <EvilIcons name="camera" size={25} color="grey" />
+                            </TouchableOpacity>
                         </View>
 
                         <View>
-                            <Text style={this.styles.updateUserSmallText}> ID : {this.state.currentUserID} </Text>
+                            <Text style={this.styles.updateUserSmallText}> Your ID : {this.state.currentUserID} </Text>
                         </View>
                     </View>
 
