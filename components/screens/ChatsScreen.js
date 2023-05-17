@@ -406,7 +406,7 @@ class ChatsScreen extends Component {
                 }
                 else if (response.status == 400) {
                     this.setState({ showModal: true })
-                    this.setState({ errorText: "Something went wrong, Try Again" })
+                    this.setState({ errorText: "Make Sure They Are In Contacts, Try Again" })
                 }
 
                 else if (response.status == 401) {

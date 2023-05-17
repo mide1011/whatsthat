@@ -43,7 +43,6 @@ export default function CameraSendToServer() {
 
 
 
-
     async function sendToServer(data) {
 
         const sessionToken = await AsyncStorage.getItem("sessionToken");
