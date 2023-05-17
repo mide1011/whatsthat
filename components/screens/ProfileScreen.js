@@ -84,6 +84,13 @@ class ProfileScreen extends Component {
 
         },
 
+        updateUserSmallText: {
+
+            fontSize: 12,
+            fontWeight: '600',
+
+        },
+
 
         userPFP: {
             borderColor: colors.greenBars,
@@ -226,6 +233,8 @@ class ProfileScreen extends Component {
                 this.setState({ origLastName: data.last_name })
                 this.setState({ origPassword: data.password })
                 this.setState({ origEmail: data.email })
+                this.setState({ currentUserID: data.user_id })
+
 
             })
 
@@ -236,8 +245,6 @@ class ProfileScreen extends Component {
 
 
     }
-
-
 
 
     logoutUser = async () => {
@@ -358,8 +365,6 @@ class ProfileScreen extends Component {
     }
 
 
-
-
     async getUserProfilePic() {
         const sessionToken = await AsyncStorage.getItem("sessionToken");
         const userID = await AsyncStorage.getItem("userID");
@@ -440,6 +445,10 @@ class ProfileScreen extends Component {
                         <View>
                             <Text style={this.styles.updateUserText}> Update Your Details </Text>
                         </View>
+
+                        <View>
+                            <Text style={this.styles.updateUserSmallText}> ID : {this.state.currentUserID} </Text>
+                        </View>
                     </View>
 
                     <View style={GeneralStyles.registerFormWrapper}>
@@ -459,7 +468,7 @@ class ProfileScreen extends Component {
 
                         </View>
                         <View>
-                            <TextInput style={GeneralStyles.input} onChangeText={password => this.setState({ password })} 
+                            <TextInput style={GeneralStyles.input} onChangeText={password => this.setState({ password })}
                                 secureTextEntry={!this.state.isSecureEntry} />
 
                             <TouchableOpacity

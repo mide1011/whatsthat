@@ -3,7 +3,7 @@ const colors = {
     darkText: '#000000',
     lightBars: '#97FAA7',
     greenBars: '#07B022',
-    mainAppScreens: '#075e54',
+    mainAppScreens: '#D3E6D3',
     tabBarTheme: '#CBF7D3',
     chatsBackgroundColor: '#DEF2E7',
     mainTheme: '#a0e8b2',

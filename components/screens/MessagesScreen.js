@@ -9,7 +9,7 @@ import Modal from "react-native-modal";
 import React from 'react';
 import InputValidator from '../../helpers/InputValidator';
 import Moment from 'moment';
-
+import PropTypes from 'prop-types';
 
 class MessagesScreen extends Component {
 
@@ -184,11 +184,11 @@ class MessagesScreen extends Component {
 
 
     chatsItemComponent = ({ item }) => {
-        // eslint-disable-next-line react/prop-types
+     
         const navigation = this.props.navigation;
         Moment.locale('en');
         return (
-            // eslint-disable-next-line react/prop-types
+          
             <TouchableOpacity key={item.chat_id} onPress={() => { { navigation.navigate('Chats', { chatID: item.chat_id }) } }}>
                 
 
@@ -239,11 +239,16 @@ class MessagesScreen extends Component {
     }
 
 
+    static get propTypes() {
+        return {
+            navigation: PropTypes.object.isRequired,
+        };
+    }
+
 
     render() {
 
-        // const { modalVisible } = this.state;
-        // eslint-disable-next-line react/prop-types
+       
         const navigation = this.props.navigation;
         const newChatName = '';
 

@@ -218,6 +218,15 @@ export default StyleSheet.create({
     justifyContent: 'space-around',
   },
 
+
+  endContainer: {
+    flexDirection: 'row',
+    //alignItems: 'flex-end',
+    alignContent: 'flex-end',
+  },
+
+
+
   avatar: {
     width: 60,
     height: 60,
@@ -227,7 +236,6 @@ export default StyleSheet.create({
 
 
   contactsWrapper: {
-
     marginTop: 12,
     padding: 10,
     backgroundColor: colors.mainTheme,
@@ -236,6 +244,9 @@ export default StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     borderRadius: 35,
+
+
+
   },
 
 
@@ -249,6 +260,10 @@ export default StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     borderRadius: 35,
+
+
+
+    
   },
 
 
@@ -279,6 +294,7 @@ export default StyleSheet.create({
   },
 
   mainAppContainer: {
+
     flex: 1,
     backgroundColor: colors.background,
     alignItems: 'center',

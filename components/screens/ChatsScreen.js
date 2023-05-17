@@ -4,7 +4,7 @@ import { TouchableOpacity } from 'react-native-web';
 import colors from '../../assets/colors/colors';
 import GeneralStyles from '../../styles/GeneralStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FontAwesome, Ionicons, EvilIcons, MaterialCommunityIcons } from '@expo/vector-icons'
+import { FontAwesome, Ionicons, EvilIcons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons'
 import Modal from "react-native-modal";
 import InputValidator from '../../helpers/InputValidator';
 import Moment from 'moment';
@@ -22,6 +22,7 @@ class ChatsScreen extends Component {
             chatMessages: [],
             messages: [],
             messagesForServer: [],
+            draftMessages: [],
             message: '',
             chatName: '',
             chatOwnerID: '',
@@ -32,6 +33,7 @@ class ChatsScreen extends Component {
             isUserAdded: false,
             viewMembers: false,
             editMessage: false,
+            isDraft: false,
             showModal: false,
 
 
@@ -668,6 +670,68 @@ class ChatsScreen extends Component {
     }
 
 
+    loadDrafts = async () => {
+        try {
+
+            const drafts = await AsyncStorage.getItem("userDrafts");
+            const userDrafts = JSON.parse(drafts)
+
+            if (drafts) {
+                this.setState({ draftMessages: userDrafts.map((item) => item.message) })
+                console.log(drafts)
+            }
+
+
+
+        }
+
+        catch (error) {
+            console.log(error)
+
+        }
+    };
+
+    saveDrafts = async () => {
+        const { draftMessages } = this.state;
+        const { message } = this.state;
+        const newDraft = { id: Date.now(), message }
+        const updatedDrafts = [...draftMessages, newDraft];
+        try {
+
+            await AsyncStorage.setItem("userDrafts", JSON.stringify(updatedDrafts));
+            this.setState({ drafts: updatedDrafts, message: '' });
+        }
+
+        catch (error) {
+            console.log(error)
+
+        }
+
+
+
+    }
+
+    deleteDraft = async (id) => {
+        const { draftMessages } = this.state
+        const { updatedDrafts } = draftMessages.filter((draftMessages) => draftMessages.id !== id);
+
+        try {
+            await AsyncStorage.setItem("userDrafts", JSON.stringify(updatedDrafts));
+            this.setState({ drafts: updatedDrafts });
+        }
+
+        catch (error) {
+            console.log(error)
+
+        }
+
+
+    }
+
+
+
+
+
     static get propTypes() {
         return {
             navigation: PropTypes.object.isRequired,
@@ -681,6 +745,7 @@ class ChatsScreen extends Component {
         this.unsubscribe = this.props.navigation.addListener('focus', () => {
             this.setState({ isLoading: false })
             this.loadSingleChat();
+            this.loadDrafts();
 
         });
 
@@ -799,6 +864,38 @@ class ChatsScreen extends Component {
     }
 
 
+
+    draftsItemComponent = ({ item }) => {
+
+        return (
+            <View style={GeneralStyles.contactsWrapper} key={item}>
+                <Text style={GeneralStyles.infoText}>
+                    {item}
+                </Text>
+
+                <View style={GeneralStyles.iconSpacing}>
+
+                    <View style={{ margin: 10 }}>
+
+                        <TouchableOpacity
+                            onPress={() => { this.deleteDraft(item) }}>
+                            <EvilIcons name="trash" size={25} color="grey" />
+                        </TouchableOpacity>
+
+
+                    </View>
+
+                </View>
+
+
+            </View>
+
+
+        )
+
+    }
+
+
     updateChatRoomName = () => {
         this.setState(({ updateChatName }) => ({ updateChatName: !updateChatName }));
 
@@ -820,6 +917,11 @@ class ChatsScreen extends Component {
 
     viewMembers = () => {
         this.setState(({ viewMembers }) => ({ viewMembers: !viewMembers }));
+
+    }
+
+    handleDrafts = () => {
+        this.setState(({ isDraft }) => ({ isDraft: !isDraft }));
 
     }
 
@@ -851,6 +953,12 @@ class ChatsScreen extends Component {
             this.setState({ showModal: false })
         }, 100);
     }
+
+
+
+
+
+
 
 
 
@@ -913,6 +1021,15 @@ class ChatsScreen extends Component {
 
                             </View>
 
+                            <View style={GeneralStyles.iconSpacing}>
+                                <TouchableOpacity onPress={() => {
+                                    { this.setState({ isDraft: true }) };
+                                }}>
+                                    <MaterialIcons name="drafts" size={25} color="pink" />
+                                </TouchableOpacity>
+
+                            </View>
+
 
 
                             <View style={GeneralStyles.iconSpacing}>
@@ -965,16 +1082,16 @@ class ChatsScreen extends Component {
 
 
 
-                    <View style={this.styles.centeredView}>
+                    <View style={GeneralStyles.centeredView}>
                         <Modal transparent={true} animationType="fade" isVisible={this.state.updateChatName}
                             onRequestClose={this.updateChatRoomName}>
 
 
-                            <View style={this.styles.centeredView}>
-                                <View style={this.styles.modalView}>
+                            <View style={GeneralStyles.centeredView}>
+                                <View style={GeneralStyles.modalView}>
 
                                     <View style={{ alignItems: 'center' }}>
-                                        <View style={this.styles.modalHead}>
+                                        <View style={GeneralStyles.modalHead}>
                                             <Text style={GeneralStyles.chatHeaderText}>Chat Name</Text>
                                             <TouchableOpacity
                                                 onPress={() => this.updateChatRoomName()}>
@@ -988,7 +1105,7 @@ class ChatsScreen extends Component {
                                         placeholderTextColor={'grey'}
                                         value={this.state.newChatName}
                                         onChangeText={newChatName => this.setState({ newChatName })}
-                                        style={this.styles.modalInput}
+                                        style={GeneralStyles.modalInput}
                                         multiline
 
                                     />
@@ -1001,8 +1118,8 @@ class ChatsScreen extends Component {
 
                                         {this.state.newChatName ?
 
-                                            (<View style={[this.styles.button, this.styles.buttonOpen]}>
-                                                <Text style={this.styles.textStyle}> Update </Text>
+                                            (<View style={[GeneralStyles.button, GeneralStyles.buttonOpen]}>
+                                                <Text style={GeneralStyles.textStyle}> Update </Text>
                                             </View>) : (<> </>)}
 
                                     </TouchableOpacity>
@@ -1014,16 +1131,16 @@ class ChatsScreen extends Component {
 
 
 
-                    <View style={this.styles.centeredView}>
+                    <View style={GeneralStyles.centeredView}>
                         <Modal transparent={true} animationType="fade" isVisible={this.state.isUserAdded}
                             onRequestClose={this.addUserToChatRoom}>
 
 
-                            <View style={this.styles.centeredView}>
-                                <View style={this.styles.modalView}>
+                            <View style={GeneralStyles.centeredView}>
+                                <View style={GeneralStyles.modalView}>
 
                                     <View style={{ alignItems: 'center' }}>
-                                        <View style={this.styles.modalHead}>
+                                        <View style={GeneralStyles.modalHead}>
                                             <Text style={GeneralStyles.chatHeaderText}>Add To Chat</Text>
                                             <TouchableOpacity
                                                 onPress={() => this.addUserToChatRoom()}>
@@ -1037,7 +1154,7 @@ class ChatsScreen extends Component {
                                         placeholderTextColor={'grey'}
                                         value={this.state.newUserToAddID}
                                         onChangeText={newUserToAddID => this.setState({ newUserToAddID })}
-                                        style={this.styles.modalInput}
+                                        style={GeneralStyles.modalInput}
 
 
                                     />
@@ -1050,8 +1167,8 @@ class ChatsScreen extends Component {
 
                                         {this.state.newUserToAddID ?
 
-                                            (<View style={[this.styles.button, this.styles.buttonOpen]}>
-                                                <Text style={this.styles.textStyle}> Update </Text>
+                                            (<View style={[GeneralStyles.button, GeneralStyles.buttonOpen]}>
+                                                <Text style={GeneralStyles.textStyle}> Update </Text>
                                             </View>) : (<> </>)}
 
                                     </TouchableOpacity>
@@ -1063,18 +1180,18 @@ class ChatsScreen extends Component {
 
 
 
-                    <View style={this.styles.centeredView}>
+                    <View style={GeneralStyles.centeredView}>
 
 
                         <Modal transparent={true} animationType="fade" isVisible={this.state.viewMembers}
                             onRequestClose={this.viewMembers}>
 
 
-                            <View style={this.styles.centeredView}>
-                                <View style={this.styles.modalView}>
+                            <View style={GeneralStyles.centeredView}>
+                                <View style={GeneralStyles.modalView}>
 
                                     <View style={{ alignItems: 'center' }}>
-                                        <View style={this.styles.modalHead}>
+                                        <View style={GeneralStyles.modalHead}>
                                             <Text style={GeneralStyles.chatHeaderText}>Members</Text>
                                             <TouchableOpacity
                                                 onPress={() => this.viewMembers()}>
@@ -1101,16 +1218,54 @@ class ChatsScreen extends Component {
 
 
 
-                    <View style={this.styles.centeredView}>
+                    <View style={GeneralStyles.centeredView}>
+
+
+                        <Modal transparent={true} animationType="fade" isVisible={this.state.isDraft}
+                            onRequestClose={this.handleDrafts}>
+
+
+                            <View style={GeneralStyles.centeredView}>
+                                <View style={GeneralStyles.modalView}>
+
+                                    <View style={{ alignItems: 'center' }}>
+                                        <View style={GeneralStyles.modalHead}>
+                                            <Text style={GeneralStyles.chatHeaderText}>Drafts</Text>
+                                            <TouchableOpacity
+                                                onPress={() => this.handleDrafts()}>
+                                                <Ionicons name="md-close-sharp" size={25} color="#CC0000" />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+
+
+                                    <FlatList
+                                        data={this.state.draftMessages}
+                                        renderItem={this.draftsItemComponent}
+                                    // keyExtractor={(item) => item.id}
+
+                                    />
+
+
+                                </View>
+                            </View>
+
+                        </Modal>
+                    </View>
+
+
+
+
+                    <View style={GeneralStyles.centeredView}>
                         <Modal transparent={true} animationType="fade" isVisible={this.state.editMessage}
                             onRequestClose={this.handleEditedChat}>
 
 
-                            <View style={this.styles.centeredView}>
-                                <View style={this.styles.modalView}>
+                            <View style={GeneralStyles.centeredView}>
+                                <View style={GeneralStyles.modalView}>
 
                                     <View style={{ alignItems: 'center' }}>
-                                        <View style={this.styles.modalHead}>
+                                        <View style={GeneralStyles.modalHead}>
                                             <Text style={GeneralStyles.chatHeaderText}>Edit Message</Text>
                                             <TouchableOpacity
                                                 onPress={() => this.handleEditedChat()}>
@@ -1130,7 +1285,7 @@ class ChatsScreen extends Component {
                                         placeholderTextColor={'grey'}
                                         defaultValue={this.state.origMessage}
                                         onChangeText={newMessage => this.setState({ newMessage })}
-                                        style={this.styles.modalInput}
+                                        style={GeneralStyles.modalInput}
                                         multiline
 
 
@@ -1146,8 +1301,8 @@ class ChatsScreen extends Component {
 
                                         {this.state.newMessage ?
 
-                                            (<View style={[this.styles.button, this.styles.buttonOpen]}>
-                                                <Text style={this.styles.textStyle}> Update </Text>
+                                            (<View style={[GeneralStyles.button, GeneralStyles.buttonOpen]}>
+                                                <Text style={GeneralStyles.textStyle}> Update </Text>
                                             </View>) : (<> </>)}
 
                                     </TouchableOpacity>
@@ -1170,7 +1325,13 @@ class ChatsScreen extends Component {
 
                     />
 
+
+
                     <View style={this.styles.sendBoxContainer}>
+
+
+
+
                         <View style={this.styles.sendBoxMainContainer}>
                             <TextInput placeholder={'Type a message'}
                                 style={this.styles.inputBox}
@@ -1180,7 +1341,14 @@ class ChatsScreen extends Component {
 
                             />
 
+
+
+
+
+
                         </View>
+
+
 
                         <TouchableOpacity onPress={() => {
                             { this.sendMessage(this.state.chatID) };
@@ -1188,7 +1356,24 @@ class ChatsScreen extends Component {
                         }}>
                             <View style={this.styles.buttonContainer}>
                                 {this.state.message ? (
-                                    <MaterialCommunityIcons name='send-circle' size={40} style={this.styles.sendButton} color={'#34B7F1'} />
+                                    <MaterialCommunityIcons name='send-circle' size={35} style={this.styles.sendButton} color={'#34B7F1'} />
+
+
+                                ) :
+                                    (<> </>)}
+
+                            </View>
+                        </TouchableOpacity>
+
+
+                        <TouchableOpacity onPress={() => {
+                            { this.saveDrafts() };
+
+                        }}>
+                            <View style={this.styles.buttonContainer}>
+                                {this.state.message ? (
+                                    <MaterialCommunityIcons name='send-circle' size={35} style={this.styles.sendButton} color={'pink'} />
+
 
                                 ) :
                                     (<> </>)}

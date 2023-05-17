@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { Text, TextInput, View, SafeAreaView, ScrollView, StyleSheet, ActivityIndicator, FlatList } from 'react-native';
+import { Text, TextInput, View, SafeAreaView, Image, ScrollView, StyleSheet, ActivityIndicator, FlatList } from 'react-native';
 import { TouchableOpacity } from 'react-native-web';
 import colors from '../../assets/colors/colors';
 import GeneralStyles from '../../styles/GeneralStyles';
@@ -7,6 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons'
 import Modal from "react-native-modal";
 import React from 'react';
+import PropTypes from 'prop-types';
+
 
 class ContactsScreen extends Component {
 
@@ -29,7 +31,7 @@ class ContactsScreen extends Component {
             currentUser: null,
             checkContact: false,
             showModal: false,
-
+           
         };
 
 
@@ -177,6 +179,7 @@ class ContactsScreen extends Component {
                 const data = rJson
                 this.setState({ searchedContacts: data })
                 this.setState({ currentUser: currentUserID })
+
 
             })
 
@@ -440,27 +443,39 @@ class ContactsScreen extends Component {
             <View style={GeneralStyles.contactsWrapper} key={item.user_id}>
 
 
-                <Text style={GeneralStyles.infoText}>
-                    {item.user_id + " " + item.first_name + " " + item.last_name}
-                </Text>
+                {/* <View style={GeneralStyles.leftContainer}>
+                    <Image style={GeneralStyles.avatar}
+                        source={{ uri: this.state.image }}
+          />
+                </View> */}
 
-                <View style={GeneralStyles.iconSpacing}>
-
-                    <View style={{ margin: 10 }}>
-                        <TouchableOpacity onPress={() => { this.removeContact(item) }}>
-                            <Ionicons name="person-remove" size={30} color="FC0000" />
-                        </TouchableOpacity>
-
-                    </View>
-
-
-                    <View>
-                        <TouchableOpacity onPress={() => this.blockContact(item)}>
-                            <MaterialCommunityIcons name="block-helper" size={30} color="FC0000" />
-                        </TouchableOpacity>
-
-                    </View>
+                <View style={GeneralStyles.midContainer}>
+                    <Text style={GeneralStyles.infoText}>
+                        {item.user_id + " " + item.first_name + " " + item.last_name}
+                    </Text>
                 </View>
+
+                <View style={GeneralStyles.endContainer}>
+                    <View style={GeneralStyles.iconSpacing}>
+
+                        <View style={GeneralStyles.iconSpacing}>
+                            <TouchableOpacity onPress={() => { this.removeContact(item) }}>
+                                <Ionicons name="person-remove" size={30} color="FC0000" />
+                            </TouchableOpacity>
+
+                        </View>
+
+
+                        <View style={GeneralStyles.iconSpacing}>
+                            <TouchableOpacity onPress={() => this.blockContact(item)}>
+                                <MaterialCommunityIcons name="block-helper" size={30} color="FC0000" />
+                            </TouchableOpacity>
+
+                        </View>
+                    </View>
+
+                </View>
+
             </View>
 
 
@@ -476,7 +491,7 @@ class ContactsScreen extends Component {
     }
 
     componentDidMount() {
-        // eslint-disable-next-line react/prop-types
+
         this.unsubscribe = this.props.navigation.addListener('focus', () => {
             this.loadContacts();
             this.setState({ isLoading: false })
@@ -505,12 +520,16 @@ class ContactsScreen extends Component {
         }, 100);
     }
 
+    static get propTypes() {
+        return {
+            navigation: PropTypes.object.isRequired,
+        };
+    }
+
 
 
     render() {
 
-        // const { modalVisible } = this.state;
-        // eslint-disable-next-line react/prop-types
         const navigation = this.props.navigation;
 
         if (this.state.isLoading) {
@@ -570,35 +589,6 @@ class ContactsScreen extends Component {
 
                             }
 
-                            {/* {
-                                this.state.errorText.length > 0 &&
-
-
-
-                                <View>
-                                    <Modal
-                                        animationType="slide"
-                                        backdropColor="black"
-                                        backdropOpacity={0.9}
-
-                                        isVisible={this.state.modalVisible}
-                                    >
-                                        <View style={this.styles.centeredView}>
-                                            <View style={this.styles.error}>
-                                                <Text style={this.styles.modalText}>{this.state.errorText}</Text>
-                                                <TouchableOpacity
-                                                    style={[this.styles.button, this.styles.buttonClose]}
-                                                    onPress={this.manageModalVisibility}>
-                                                    <Text style={this.styles.textStyle}>Close</Text>
-                                                </TouchableOpacity>
-                                            </View>
-                                        </View>
-                                    </Modal>
-
-                                </View>
-
-
-                            } */}
 
                         </ScrollView>
 
