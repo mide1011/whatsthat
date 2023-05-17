@@ -20,15 +20,6 @@ const Stack = createNativeStackNavigator();
 const Tabs = createBottomTabNavigator();
 
 
-
-// const MessageStack = () => (
-//   <Stack.Navigator>
-//     <Stack.Screen name="Messages" component={MessagesScreen} options={{ headerShown: false }} />
-//     <Tabs.Screen name="Chats" component={ChatsScreen} options={{ headerShown: false}} />
-//   </Stack.Navigator>
-// );
-
-
 const ContactsStack = () => (
   <Stack.Navigator>
     <Stack.Screen name="Contacts" component={ContactsScreen} options={{ headerShown: false }} />
@@ -143,8 +134,6 @@ class myNav extends Component {
     return (
       <NavigationContainer>
         <Stack.Navigator initialRouteName='Login' >
-          <Stack.Screen
-            name="Home" component={HomeScreen} options={{ headerShown: false }} />
           <Stack.Screen
             name="Register" component={RegisterScreen} options={{ headerShown: false }} />
           <Stack.Screen

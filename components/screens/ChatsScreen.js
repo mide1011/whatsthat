@@ -202,81 +202,6 @@ class ChatsScreen extends Component {
         },
 
 
-        centeredView: {
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginTop: 22,
-        },
-
-        modalView: {
-            margin: 20,
-            backgroundColor: 'white',
-            borderRadius: 20,
-            padding: 35,
-            alignItems: 'center',
-            shadowColor: '#000',
-            shadowOffset: {
-                width: 0,
-                height: 2,
-            },
-            shadowOpacity: 0.25,
-            shadowRadius: 4,
-            elevation: 5,
-        },
-
-
-
-        button: {
-            borderRadius: 20,
-            padding: 10,
-            elevation: 2,
-        },
-        buttonOpen: {
-            backgroundColor: "#34B7F1",
-        },
-        buttonClose: {
-            backgroundColor: '#2196F3',
-        },
-        textStyle: {
-            color: 'white',
-            fontWeight: 'bold',
-            textAlign: 'center',
-        },
-        modalText: {
-
-            marginTop: 10,
-            fontSize: 16,
-            color: '#34633E',
-            opacity: '90%',
-            fontWeight: 'bold',
-            marginBottom: 15,
-            textAlign: 'center',
-        },
-
-        modalHead: {
-            width: "100%",
-            flexDirection: "row",
-            justifyContent: "space-around",
-            alignItems: "center",
-        },
-
-        modalInput: {
-            borderBottomColor: '#14c83c',
-            borderBottomWidth: 2,
-            padding: 8,
-            margin: 30,
-            marginTop: 10,
-            fontSize: 13,
-            color: '#34633E',
-            fontWeight: 'bold',
-            marginBottom: 20,
-        }
-
-
-
-
-
 
 
     });
@@ -1242,7 +1167,6 @@ class ChatsScreen extends Component {
                                     <FlatList
                                         data={this.state.draftMessages}
                                         renderItem={this.draftsItemComponent}
-                                    // keyExtractor={(item) => item.id}
 
                                     />
 
